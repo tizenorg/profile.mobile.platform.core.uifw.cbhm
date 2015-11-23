@@ -18,6 +18,13 @@
 #ifndef _CLIPDRAWER_H_
 #define _CLIPDRAWER_H_
 
+//should be in build script?
+#define HAVE_WL 1
+
+#ifdef HAVE_WL
+#include <Ecore_Wayland.h>
+#endif
+
 #ifdef HAVE_X11
 //#include <Ecore_X.h>
 #endif
@@ -51,6 +58,9 @@ struct _ClipdrawerData {
 	Ecore_X_Window x_main_win;
 #else
 	unsigned int x_main_win;
+#endif
+#ifdef HAVE_WL
+	Ecore_Wl_Window *wl_main_win;
 #endif
 
 	int o_degree;

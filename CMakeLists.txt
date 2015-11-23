@@ -22,7 +22,7 @@ IF ( MDM_ENABLE )
 ENDIF ( MDM_ENABLE )
 
 INCLUDE(FindPkgConfig)
-	pkg_check_modules(pkgs REQUIRED elementary eet appcore-efl appcore-common eina evas ecore ecore-file ecore-evas edje ecore-input notification vconf vconf-internal-keys libsystemd-daemon ${MDM_REQUIED_PKGS})
+	pkg_check_modules(pkgs REQUIRED elementary eet appcore-efl appcore-common eina evas ecore ecore-file ecore-wayland ecore-evas edje ecore-input notification vconf vconf-internal-keys libsystemd-daemon ${MDM_REQUIED_PKGS})
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")

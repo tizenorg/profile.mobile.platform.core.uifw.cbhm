@@ -94,6 +94,10 @@ static Eina_Bool setClipboardManager(AppData *ad)
 		}
 	}
 #endif
+#ifdef HAVE_WL
+	//FIXME: Implement it
+	return EINA_TRUE;
+#endif
 	return EINA_FALSE;
 }
 
@@ -115,6 +119,13 @@ static void set_x_window(Ecore_X_Window x_event_win, Ecore_X_Window x_root_win)
 {
 }
 #endif
+#ifdef HAVE_WL
+static void set_wl_window(Ecore_Wl_Window *wl_event_win)
+{
+	ecore_wl_window_title_set(wl_event_win, CLIPBOARD_MANAGER_WINDOW_TITLE_STRING);
+	ecore_wl_flush();
+}
+#endif
 
 static int app_create(void *data)
 {
@@ -123,6 +134,9 @@ static int app_create(void *data)
 	elm_app_base_scale_set(2.6);
 #ifdef HAVE_X11
 	ecore_x_init(ad->x_disp);
+#endif
+#ifdef HAVE_WL
+	ecore_wl_init(ad->wl_disp);
 #endif
 	_log_domain = eina_log_domain_register("cbhm", EINA_COLOR_LIGHTBLUE);
 	if (!_log_domain)
@@ -137,7 +151,12 @@ static int app_create(void *data)
 		return EXIT_FAILURE;
 	}
 
+#ifdef HAVE_X11
 	set_x_window(ad->x_event_win, ad->x_root_win);
+#endif
+#ifdef HAVE_WL
+	set_wl_window(ad->wl_event_win);
+#endif
 
 	if (!ecore_init()) return EXIT_FAILURE;
 	if (!ecore_evas_init()) return EXIT_FAILURE;
@@ -155,6 +174,7 @@ static int app_create(void *data)
 #ifdef HAVE_X11
 	set_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD, NULL);
 #endif
+	clipdrawer_activate_view(ad);
 	return 0;
 }
 

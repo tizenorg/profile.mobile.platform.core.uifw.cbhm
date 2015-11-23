@@ -20,6 +20,13 @@
 
 #include <Elementary.h>
 
+//should be in build script?
+#define HAVE_WL 1
+
+#ifdef HAVE_WL
+#include <Ecore_Wayland.h>
+#endif
+
 #ifdef HAVE_X11
 #include <Ecore_X.h>
 #endif
@@ -72,6 +79,10 @@ struct _AppData {
 	Ecore_X_Window x_active_win;
 #else
 	void *x_disp;
+	char              *wl_disp;
+	Ecore_Wl_Window   *wl_win;
+	Ecore_Wl_Window   *wl_event_win;
+	Ecore_Wl_Window   *wl_active_win;
 	unsigned int x_root_win;
 	unsigned int x_event_win;
 	unsigned int x_active_win;

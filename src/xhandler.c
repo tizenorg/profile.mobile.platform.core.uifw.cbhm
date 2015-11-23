@@ -971,6 +971,9 @@ Eina_Bool _mdm_get_allow_clipboard()
 #ifdef HAVE_X11
 			ecore_x_window_size_get(ecore_x_window_root_first_get(), &w, &h);
 #endif
+#ifdef HAVE_WL
+			ecore_wl_screen_size_get(&w, &h);
+#endif
 			evas_object_resize(win, w, h);
 			elm_win_alpha_set(win, EINA_TRUE);
 			evas_object_show(win);
