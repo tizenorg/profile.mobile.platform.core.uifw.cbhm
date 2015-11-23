@@ -58,7 +58,11 @@ struct _CNP_ITEM {
 };
 
 CNP_ITEM *item_add_by_CNP_ITEM(AppData *ad, CNP_ITEM *item, Eina_Bool storage, Eina_Bool show_msg);
+#ifdef HAVE_X11
 CNP_ITEM *item_add_by_data(AppData *ad, Ecore_X_Atom type, void *data, int len, Eina_Bool show_msg);
+#else
+CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool show_msg);
+#endif
 
 CNP_ITEM *item_get_by_index(AppData *ad, int index);
 CNP_ITEM *item_get_by_data(AppData *ad, void *data, int len);

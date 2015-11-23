@@ -61,10 +61,18 @@ typedef enum {
 
 void init_target_atoms(AppData *ad);
 void depose_target_atoms(AppData *ad);
+#ifdef HAVE_X11
 int atom_type_index_get(AppData *ad, Ecore_X_Atom atom);
+#else
+int atom_type_index_get(AppData *ad, int atom);
+#endif
 char *string_for_entry_get(AppData *ad, int type_index, const char *str);
 char *string_for_image_path_get(AppData *ad, int type_index, const char *str);
+#ifdef HAVE_X11
 Eina_Bool generic_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, Ecore_X_Atom *ttype, int *tsize);
+#else
+Eina_Bool generic_converter(AppData *ad, int reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, int *ttype, int *tsize);
+#endif
 char *entry_convert_emoticon_to_normal_text(const char *src_text);
 
 #endif

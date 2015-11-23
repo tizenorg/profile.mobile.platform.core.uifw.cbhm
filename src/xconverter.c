@@ -60,7 +60,11 @@ ENTRY_EMOTICON_S emotion_name_table[ENTRY_EMOTICON_MAX] = {
 	[ENTRY_EMOTICON_MINIMAL_SMILE] = {"emoticon/minimal-smile", ":-|"},
 };
 
+#ifdef HAVE_X11
 int atom_type_index_get(AppData *ad, Ecore_X_Atom atom)
+#else
+int atom_type_index_get(AppData *ad, int atom)
+#endif
 {
 	int i, j;
 	for (i = 0; i < ATOM_INDEX_MAX; i++)
@@ -103,19 +107,27 @@ void init_target_atoms(AppData *ad)
 	{
 		ad->targetAtoms[i].atom_cnt = atom_cnt[i];
 		ad->targetAtoms[i].name = MALLOC(sizeof(char *) * atom_cnt[i]);
+#ifdef HAVE_X11
 		ad->targetAtoms[i].atom = MALLOC(sizeof(Ecore_X_Atom) * atom_cnt[i]);
+#else
+		ad->targetAtoms[i].atom = MALLOC(sizeof(int) * atom_cnt[i]);
+#endif
 		for (j = 0; j < atom_cnt[i]; j++)
 		{
 			DBG("atomName: %s", targetAtomNames[i][j]);
 			ad->targetAtoms[i].name[j] = SAFE_STRDUP(targetAtomNames[i][j]);
+#ifdef HAVE_X11
 			ad->targetAtoms[i].atom[j] = ecore_x_atom_get(targetAtomNames[i][j]);
+#endif
 		}
 		ad->targetAtoms[i].convert_to_entry = converts_to_entry[i];
 
 		for (j = 0; j < ATOM_INDEX_MAX; j++)
 			ad->targetAtoms[i].convert_to_target[j] = converts[i][j];
-		//ecore_x_selection_converter_atom_add(ad->targetAtoms[i].atom, target_converters[i]);
-		//ecore_x_selection_converter_atom_add(ad->targetAtoms[i].atom, generic_converter);
+#ifdef HAVE_X11
+		ecore_x_selection_converter_atom_add(ad->targetAtoms[i].atom, target_converters[i]);
+		ecore_x_selection_converter_atom_add(ad->targetAtoms[i].atom, generic_converter);
+#endif
 	}
 }
 
@@ -136,7 +148,11 @@ void depose_target_atoms(AppData *ad)
 	}
 }
 
+#ifdef HAVE_X11
 static Eina_Bool targets_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, Ecore_X_Atom *ttype, int *tsize)
+#else
+static Eina_Bool targets_converter(AppData *ad, int reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, int *ttype, int *tsize)
+#endif
 {
 	CALLED();
 
@@ -165,7 +181,11 @@ static Eina_Bool targets_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *
 			count += ad->targetAtoms[i].atom_cnt;
 	}
 
+#ifdef HAVE_X11
 	*data_ret = MALLOC(sizeof(Ecore_X_Atom) * count);
+#else
+	*data_ret = MALLOC(sizeof(int) * count);
+#endif
 	DBG("item_type: %d, target Atom cnt: %d", item_type_index, count);
 	if (!*data_ret)
 		return EINA_FALSE;
@@ -176,7 +196,11 @@ static Eina_Bool targets_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *
 		{
 			for(j = 0; j < ad->targetAtoms[i].atom_cnt; j++)
 			{
+#ifdef HAVE_X11
 				((Ecore_X_Atom *)*data_ret)[count++] = ad->targetAtoms[i].atom[j];
+#else
+				((int *)*data_ret)[count++] = ad->targetAtoms[i].atom[j];
+#endif
 				DBG("send target atom: %s", ad->targetAtoms[i].name[j]);
 			}
 		}
@@ -191,12 +215,20 @@ static Eina_Bool targets_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *
 	}
 
 	if (size_ret) *size_ret = count;
+#ifdef HAVE_X11
 	if (ttype) *ttype = ECORE_X_ATOM_ATOM;
+#else
+	if (ttype) *ttype = 0; //FIXME
+#endif
 	if (tsize) *tsize = 32;
 	return EINA_TRUE;
 }
 
+#ifdef HAVE_X11
 Eina_Bool generic_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, Ecore_X_Atom *ttype, int *tsize)
+#else
+Eina_Bool generic_converter(AppData *ad, int reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, int *ttype, int *tsize)
+#endif
 {
 	CALLED();
 

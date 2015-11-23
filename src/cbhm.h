@@ -19,7 +19,10 @@
 #define _CBHM_H_
 
 #include <Elementary.h>
+
+#ifdef HAVE_X11
 #include <Ecore_X.h>
+#endif
 
 #if !defined(PACKAGE)
 #  define PACKAGE "CBHM"
@@ -49,7 +52,11 @@ typedef char *(*text_converter_func)(AppData *ad, int type_index, const char *st
 #include "storage.h"
 
 struct _TargetHandler {
+#ifdef HAVE_X11
 	Ecore_X_Atom *atom;
+#else
+	unsigned int *atom;
+#endif
 	char **name;
 	int atom_cnt;
 	text_converter_func convert_to_entry;
@@ -58,10 +65,17 @@ struct _TargetHandler {
 
 struct _AppData {
 	int magic;
+#ifdef HAVE_X11
 	Ecore_X_Display *x_disp;
 	Ecore_X_Window x_root_win;
 	Ecore_X_Window x_event_win;
 	Ecore_X_Window x_active_win;
+#else
+	void *x_disp;
+	unsigned int x_root_win;
+	unsigned int x_event_win;
+	unsigned int x_active_win;
+#endif
 	Eina_List *item_list;
 
 	Eina_Bool (*draw_item_add)(AppData *ad, CNP_ITEM *item);

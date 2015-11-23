@@ -18,7 +18,9 @@
 #ifndef _CLIPDRAWER_H_
 #define _CLIPDRAWER_H_
 
-#include <Ecore_X.h>
+#ifdef HAVE_X11
+//#include <Ecore_X.h>
+#endif
 #include <Elementary.h>
 typedef enum _AnimStatus AnimStatus;
 enum _AnimStatus {
@@ -45,7 +47,11 @@ struct _ClipdrawerData {
 	Elm_Gengrid_Item_Class gic;
 	Ecore_Timer *lower_view_timer;
 	int locked_item_count;
+#ifdef HAVE_X11
 	Ecore_X_Window x_main_win;
+#else
+	unsigned int x_main_win;
+#endif
 
 	int o_degree;
 

@@ -15,7 +15,11 @@
  *
  */
 #include <appcore-efl.h>
+
+#ifdef HAVE_X11
 #include <Ecore_X.h>
+#endif
+
 #include <systemd/sd-daemon.h>
 
 #ifdef X_BASED
@@ -61,9 +65,9 @@ static Eina_Bool setClipboardManager(AppData *ad)
 	if(!ecore_file_mkpath(COPIED_DATA_STORAGE_DIR))
 		DBG("ecore_file_mkpath fail");
 
+#ifdef HAVE_X11
 	ad->x_disp = ecore_x_display_get();
 	DBG("x_disp: 0x%p", ad->x_disp);
-#ifdef X_BASED
 	if (ad->x_disp)
 	{
 		Ecore_X_Atom clipboard_manager_atom = XInternAtom(ad->x_disp, ATOM_CLIPBOARD_MANAGER_NAME, False);
@@ -93,6 +97,7 @@ static Eina_Bool setClipboardManager(AppData *ad)
 	return EINA_FALSE;
 }
 
+#ifdef HAVE_X11
 static void set_x_window(Ecore_X_Window x_event_win, Ecore_X_Window x_root_win)
 {
 	ecore_x_netwm_name_set(x_event_win, CLIPBOARD_MANAGER_WINDOW_TITLE_STRING);
@@ -100,20 +105,25 @@ static void set_x_window(Ecore_X_Window x_event_win, Ecore_X_Window x_root_win)
 			ECORE_X_EVENT_MASK_WINDOW_PROPERTY);
 	ecore_x_event_mask_set(x_root_win,
 			ECORE_X_EVENT_MASK_WINDOW_CONFIGURE);
-#ifdef X_BASED
 	ecore_x_window_prop_property_set(
 			x_root_win, ecore_x_atom_get("CBHM_XWIN"),
 			XA_WINDOW, 32, &x_event_win, 1);
-#endif
 	ecore_x_flush();
 }
+#else
+static void set_x_window(Ecore_X_Window x_event_win, Ecore_X_Window x_root_win)
+{
+}
+#endif
 
 static int app_create(void *data)
 {
 	AppData *ad = (AppData *)data;
 
 	elm_app_base_scale_set(2.6);
+#ifdef HAVE_X11
 	ecore_x_init(ad->x_disp);
+#endif
 	_log_domain = eina_log_domain_register("cbhm", EINA_COLOR_LIGHTBLUE);
 	if (!_log_domain)
 		{
@@ -142,7 +152,9 @@ static int app_create(void *data)
 	if (!(ad->storage = init_storage(ad))) return EXIT_FAILURE;
 	slot_item_count_set(ad);
 
+#ifdef HAVE_X11
 	set_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD, NULL);
+#endif
 	return 0;
 }
 
@@ -166,8 +178,10 @@ static int app_terminate(void *data)
 static int app_pause(void *data)
 {
 	AppData *ad = data;
+#ifdef HAVE_X11
 	Ecore_X_Illume_Clipboard_State state = ecore_x_e_illume_clipboard_state_get(ad->x_active_win);
 	if(state == ECORE_X_ILLUME_CLIPBOARD_STATE_ON)
+#endif
 	{
 		clipdrawer_lower_view(ad);
 	}

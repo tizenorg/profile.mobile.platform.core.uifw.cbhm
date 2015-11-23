@@ -232,7 +232,11 @@ char* html_img_save(char *copied_path, CNP_ITEM *item)
 	return NULL;
 }
 
+#ifdef HAVE_X11
 CNP_ITEM *item_add_by_data(AppData *ad, Ecore_X_Atom type, void *data, int len, Eina_Bool show_msg)
+#else
+CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool show_msg)
+#endif
 {
 	char *entry_text = NULL;
 	char *orig_path = NULL;

@@ -69,8 +69,8 @@ export TARGET=2.3-mobile
 ## systemd
 mkdir -p %{buildroot}/usr/lib/systemd/user/core-efl.target.wants
 mkdir -p %{buildroot}%{_libdir}/systemd/system/multi-user.target.wants
-ln -s ../cbhm.service  %{buildroot}/usr/lib/systemd/user/core-efl.target.wants/cbhm.service
-ln -s ../cbhm.service %{buildroot}%{_libdir}/systemd/system/multi-user.target.wants/cbhm.service
+ln -s cbhm.service  %{buildroot}/usr/lib/systemd/user/core-efl.target.wants/cbhm.service
+ln -s cbhm.service %{buildroot}%{_libdir}/systemd/system/multi-user.target.wants/cbhm.service
 
 mkdir -p %{buildroot}/%{_datadir}/license
 cp %{_builddir}/%{buildsubdir}/LICENSE %{buildroot}/%{_datadir}/license/%{name}

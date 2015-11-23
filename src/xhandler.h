@@ -18,7 +18,9 @@
 #ifndef _XCNPHANDLER_H_
 #define _XCNPHANDLER_H_
 
+#ifdef HAVE_X11
 #include <Ecore_X.h>
+#endif
 #include <Ecore.h>
 #ifdef MDM_ENABLE
 #include <mdm.h>
@@ -40,6 +42,7 @@ struct _XHandlerData {
 	Ecore_Event_Handler *xproperty_notify_handler;
 	Ecore_Event_Handler *xwindow_destroy_handler;
 
+#ifdef HAVE_X11
 	Ecore_X_Atom atomInc;
 
 	Ecore_X_Atom atomCBHM_MSG;
@@ -50,6 +53,7 @@ struct _XHandlerData {
 	Ecore_X_Atom atomCBHM_SELECTED_ITEM;
 
 	Ecore_X_Atom atomShotString;
+#endif
 
 	Ecore_Timer *selection_timer;
 };
@@ -58,12 +62,17 @@ struct _XHandlerData {
 
 XHandlerData *init_xhandler(AppData *data);
 void depose_xhandler(XHandlerData *xd);
+
+#ifdef HAVE_X11
 Eina_Bool is_cbhm_selection_owner(AppData *ad, Ecore_X_Selection selection);
 Eina_Bool set_selection_owner(AppData *ad, Ecore_X_Selection selection, CNP_ITEM *item);
+#endif
 void slot_property_set(AppData *ad, int index);
 void slot_item_count_set(AppData *ad);
 void slot_selected_item_set(AppData *ad);
+#ifdef HAVE_X11
 Eina_Bool cbhm_send_event(AppData *ad, Ecore_X_Window xwin, char *msg);
+#endif
 Eina_Bool _mdm_get_allow_clipboard();	// magnolia only
 
 #define SELECTION_CHECK_TIME 10.0

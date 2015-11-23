@@ -50,11 +50,19 @@ static void _cancel_btn_cb(void *data, Evas_Object *obj, void *event_info);
 static void _create_cbhm_popup(AppData *ad);
 static void clipdrawer_ly_clicked(void *data, Evas_Object *obj, const char *emission, const char *source);
 static void _grid_item_button_clicked(void *data, Evas_Object *obj, void *event_info);
+#ifdef HAVE_X11
 static void setting_win(Ecore_X_Display *x_disp, Ecore_X_Window x_root_win, Ecore_X_Window x_main_win);
 static Ecore_X_Window isf_ise_window_get();
 static void set_transient_for(Ecore_X_Window x_main_win, Ecore_X_Window x_active_win);
 static void unset_transient_for(Ecore_X_Window x_main_win);
 static void set_focus_for_app_window(Ecore_X_Window x_main_win, Eina_Bool enable);
+#else
+static void setting_win(void *x_disp, unsigned int x_root_win, unsigned int x_main_win);
+static int isf_ise_window_get();
+static void set_transient_for(unsigned int x_main_win, unsigned int x_active_win);
+static void unset_transient_for(unsigned int x_main_win);
+static void set_focus_for_app_window(unsigned int x_main_win, Eina_Bool enable);
+#endif
 
 static Evas_Event_Flags flick_end(void *data , void *event_info)
 {
@@ -171,10 +179,12 @@ static void _gengrid_select_cb(void *data, Evas_Object *obj, void *event)
 		{
 			ERR("In 1");
 			ad->clip_selected_item = item;
+#ifdef HAVE_X11
 			if (is_cbhm_selection_owner(ad, ECORE_X_SELECTION_SECONDARY))
 				cd->item_clicked = EINA_TRUE;
 			else
 				set_selection_owner(ad, ECORE_X_SELECTION_SECONDARY, NULL);
+#endif
 		}
 	}
 }
@@ -476,8 +486,10 @@ ClipdrawerData* init_clipdrawer(AppData *ad)
 
 void depose_clipdrawer(ClipdrawerData *cd)
 {
-	//utilx_ungrab_key(ecore_x_display_get(), cd->x_main_win, "XF86Back");
-	//utilx_ungrab_key(ecore_x_display_get(), cd->x_main_win, "XF86Home");
+#ifdef HAVE_X11
+	utilx_ungrab_key(ecore_x_display_get(), cd->x_main_win, "XF86Back");
+	utilx_ungrab_key(ecore_x_display_get(), cd->x_main_win, "XF86Home");
+#endif
 	evas_object_del(cd->main_win);
 	if (cd->anim_timer)
 		ecore_timer_del(cd->anim_timer);
@@ -782,12 +794,18 @@ static void _create_cbhm_popup(AppData *ad)
 	cd->popup_activate = EINA_TRUE;
 
 	cd->popup_win = elm_win_add(NULL, "delete popup", ELM_WIN_MENU);
+
+#ifdef HAVE_X11
 	ecore_x_window_size_get(ecore_x_window_root_first_get(), &w, &h);
+#endif
 	evas_object_resize(cd->popup_win, w, h);
 	elm_win_alpha_set(cd->popup_win, EINA_TRUE);
+
+#ifdef HAVE_X11
 	ecore_x_icccm_name_class_set(elm_win_xwindow_get(cd->popup_win),"APP_POPUP", "APP_POPUP");
-	set_focus_for_app_window(elm_win_xwindow_get(cd->popup_win) , EINA_FALSE);
-	set_transient_for(elm_win_xwindow_get(cd->popup_win), cd->x_main_win);
+#endif
+	set_focus_for_app_window((unsigned int)elm_win_xwindow_get(cd->popup_win) , EINA_FALSE);
+	set_transient_for((int)elm_win_xwindow_get(cd->popup_win), cd->x_main_win);
 	elm_win_wm_rotation_available_rotations_set(cd->popup_win, rotations, 4);
 	evas_object_show(cd->popup_win);
 
@@ -834,6 +852,8 @@ static void clipdrawer_ly_clicked(void *data, Evas_Object *obj, const char *emis
 	else
 		return;
 }
+
+#ifdef HAVE_X11
 static void set_focus_for_app_window(Ecore_X_Window x_main_win, Eina_Bool enable)
 {
 	    CALLED();
@@ -851,6 +871,11 @@ static void set_focus_for_app_window(Ecore_X_Window x_main_win, Eina_Bool enable
         enable, initial_state, icon_pixmap, icon_mask, icon_window, window_group, is_urgent);
 	    DBG("set focus mode = %d", enable);
 }
+#else
+static void set_focus_for_app_window(unsigned int x_main_win, Eina_Bool enable)
+{
+}
+#endif
 
 
 static void _ok_btn_cb(void *data, Evas_Object *obj, void *event_info)
@@ -900,6 +925,8 @@ static void _grid_item_button_clicked(void *data, Evas_Object *obj, void *event_
 	item_delete_by_CNP_ITEM(ad, item);
 }
 
+
+#ifdef HAVE_X11
 static Ecore_X_Window isf_ise_window_get()
 {
 	Ecore_X_Atom   x_atom_isf_control = ecore_x_atom_get("_ISF_CONTROL_WINDOW");
@@ -974,6 +1001,23 @@ void setting_win(Ecore_X_Display *x_disp, Ecore_X_Window x_root_win, Ecore_X_Win
 			ECORE_X_ATOM_WINDOW, 32, &x_main_win, 1);
 	ecore_x_flush();
 }
+#else
+static int isf_ise_window_get()
+{
+}
+
+void set_transient_for(unsigned int x_main_win, unsigned int x_active_win)
+{
+}
+
+void unset_transient_for(unsigned int x_main_win)
+{
+}
+
+void setting_win(void *x_disp, unsigned int x_root_win, unsigned int x_main_win)
+{
+}
+#endif
 
 Evas_Object *create_win(ClipdrawerData *cd, const char *name)
 {
@@ -987,7 +1031,9 @@ Evas_Object *create_win(ClipdrawerData *cd, const char *name)
 	}
 	elm_win_title_set(win, name);
 	elm_win_borderless_set(win, EINA_TRUE);
+#ifdef HAVE_X11
 	ecore_x_window_size_get(ecore_x_window_root_first_get(), &cd->root_w, &cd->root_h);
+#endif
 	DBG("root_w: %d, root_h: %d", cd->root_w, cd->root_h);
 	//evas_object_resize(win, cd->root_w, cd->root_h);
 
@@ -1028,7 +1074,9 @@ static void set_sliding_win_geometry(AppData *ad)
 
 	DBG("[CBHM] change degree geometry... (%d, %d, %d x %d)", x, y, w, h);
 
+#ifdef HAVE_X11
 	ecore_x_e_illume_clipboard_geometry_set(ad->x_active_win, x, y, w, h);
+#endif
 }
 
 void set_rotation_to_clipdrawer(AppData *ad)
@@ -1247,9 +1295,14 @@ void clipdrawer_activate_view(AppData* ad)
 {
 	CALLED();
 	ClipdrawerData                *cd = ad->clipdrawer;
+#ifdef HAVE_X11
 	Ecore_X_Window                 x_transient_win = ad->x_active_win;
 	Ecore_X_Window                 x_isf_ise_win = 0;
 	Ecore_X_Virtual_Keyboard_State isf_ise_state;
+#else
+	unsigned int                 x_transient_win = ad->x_active_win;
+	unsigned int                 x_isf_ise_win = 0;
+#endif
 	int rotations[4] = { 0, 90, 180, 270 };
 
 	if(cd->main_layout)
@@ -1264,6 +1317,7 @@ void clipdrawer_activate_view(AppData* ad)
 
 	if (cd->main_win)
 	{
+#ifdef HAVE_X11
 		isf_ise_state = ecore_x_e_virtual_keyboard_state_get(ad->x_active_win);
 		if (isf_ise_state == ECORE_X_VIRTUAL_KEYBOARD_STATE_ON) {
 			x_isf_ise_win = isf_ise_window_get();
@@ -1272,6 +1326,7 @@ void clipdrawer_activate_view(AppData* ad)
 				ecore_x_e_illume_clipboard_state_set(x_transient_win, ECORE_X_ILLUME_CLIPBOARD_STATE_ON);
 			}
 		}
+#endif
 		set_transient_for(cd->x_main_win, x_transient_win);
 
 		elm_win_wm_rotation_available_rotations_set(cd->main_win, rotations, 4);
@@ -1280,9 +1335,11 @@ void clipdrawer_activate_view(AppData* ad)
 		set_rotation_to_clipdrawer(ad);
 		evas_object_show(cd->main_win);
 		elm_win_activate(cd->main_win);
+#ifdef HAVE_X11
 		ecore_x_e_illume_clipboard_state_set(ad->x_active_win, ECORE_X_ILLUME_CLIPBOARD_STATE_ON);
-		//utilx_grab_key(ad->x_disp, cd->x_main_win, "XF86Back", TOP_POSITION_GRAB);
-		//utilx_grab_key(ad->x_disp, cd->x_main_win, "XF86Home", SHARED_GRAB);
+		utilx_grab_key(ad->x_disp, cd->x_main_win, "XF86Back", TOP_POSITION_GRAB);
+		utilx_grab_key(ad->x_disp, cd->x_main_win, "XF86Home", SHARED_GRAB);
+#endif
 		ecore_timer_add(0.125, timer_cb, cd);  //0.125 is experimentally decided.
 	}
 
@@ -1327,13 +1384,16 @@ void clipdrawer_lower_view(AppData* ad)
 {
 	CALLED();
 	ClipdrawerData *cd = ad->clipdrawer;
+#ifdef HAVE_X11
 	Ecore_X_Window                 x_isf_ise_win = 0;
 	Ecore_X_Virtual_Keyboard_State isf_ise_state;
+#endif
 
 	if (cd->lower_view_timer) return;
 
 	if (cd->main_win)
 	{
+#ifdef HAVE_X11
 		ecore_x_e_illume_clipboard_state_set(ad->x_active_win, ECORE_X_ILLUME_CLIPBOARD_STATE_OFF);
 		ecore_x_e_illume_clipboard_geometry_set(ad->x_active_win, 0, 0, 0, 0);
 
@@ -1344,6 +1404,7 @@ void clipdrawer_lower_view(AppData* ad)
 			if (x_isf_ise_win)
 				ecore_x_e_illume_clipboard_state_set(x_isf_ise_win, ECORE_X_ILLUME_CLIPBOARD_STATE_OFF);
 		}
+#endif
 
 		//utilx_ungrab_key(ad->x_disp, cd->x_main_win, "XF86Back");
 		//utilx_ungrab_key(ad->x_disp, cd->x_main_win, "XF86Home");
