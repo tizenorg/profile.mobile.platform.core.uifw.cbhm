@@ -162,15 +162,23 @@ static int app_create(void *data)
 	if (!ecore_evas_init()) return EXIT_FAILURE;
 	if (!edje_init()) return EXIT_FAILURE;
 	ad->magic = CBHM_MAGIC;
+#ifdef HAVE_X11
 	init_target_atoms(ad);
+#endif
 	if (!(ad->clipdrawer = init_clipdrawer(ad))) return EXIT_FAILURE;
 
 	//set env for root.
 	setenv("HOME", "/", 1);
+#ifdef HAVE_X11
 	if (!(ad->xhandler = init_xhandler(ad))) return EXIT_FAILURE;
+#endif
+#ifdef HAVE_WAYLAND
+	if (!(ad->wlhandler = init_wlhandler(ad))) return EXIT_FAILURE;
+#endif
 	if (!(ad->storage = init_storage(ad))) return EXIT_FAILURE;
+#ifdef HAVE_X11
 	slot_item_count_set(ad);
-
+#endif
 #ifdef HAVE_X11
 	set_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD, NULL);
 #endif
@@ -184,9 +192,13 @@ static int app_terminate(void *data)
 
 	item_clear_all(ad);
 	depose_clipdrawer(ad->clipdrawer);
+#ifdef HAVE_X11
 	depose_xhandler(ad->xhandler);
+#endif
 	depose_storage(ad->storage);
+#ifdef HAVE_X11
 	depose_target_atoms(ad);
+#endif
 	FREE(ad);
 
 	eina_log_domain_unregister(_log_domain);
@@ -239,7 +251,7 @@ int main(int argc, char *argv[])
 	ops.data = ad;
 	g_main_ad = ad;
 
-	appcore_set_i18n(PACKAGE, LOCALEDIR);
+	//appcore_set_i18n(PACKAGE, LOCALEDIR);
 	appcore_set_event_callback(APPCORE_EVENT_LANG_CHANGE, _lang_changed, NULL);
 
 	// Notyfication to systemd

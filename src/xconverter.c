@@ -17,27 +17,27 @@
 
 #include "xconverter.h"
 
-static char *html_to_entry(AppData *ad, int type_index, const char *str);
-static char *efl_to_entry(AppData *ad, int type_index, const char *str);
-static char *text_to_entry(AppData *ad, int type_index, const char *str);
-static char *image_path_to_entry(AppData *ad, int type_index, const char *str);
-static char *polaris_to_entry(AppData *ad, int type_index, const char *str);
+static char* html_to_entry(AppData *ad, int type_index, const char *str);
+static char* efl_to_entry(AppData *ad, int type_index, const char *str);
+static char* text_to_entry(AppData *ad, int type_index, const char *str);
+static char* image_path_to_entry(AppData *ad, int type_index, const char *str);
+static char* polaris_to_entry(AppData *ad, int type_index, const char *str);
 
-//static char *make_close_tag(Eina_List* nodes);
-static char *do_not_convert(AppData *ad, int type_index, const char *str);
-static char *html_to_efl(AppData *ad, int type_index, const char *str);
-static char *efl_to_html(AppData *ad, int type_index, const char *str);
-static char *text_to_html(AppData *ad, int type_index, const char *str);
-static char *text_to_efl(AppData *ad, int type_index, const char *str);
-static char *to_text(AppData *ad, int type_index, const char *str);
-static char *image_path_to_html(AppData *ad, int type_index, const char *str);
-static char *image_path_to_efl(AppData *ad, int type_index, const char *str);
-//static char *image_path_to_text(AppData *ad, int type_index, const char *str);
-//static char *efl_to_efl(AppData *ad, int type_index, const char *str);
-//static char *html_to_html(AppData *ad, int type_index, const char *str);
-static char *image_path_to_image_path(AppData *ad, int type_index, const char *str);
-static char *html_to_image_path(AppData *ad, int type_index, const char *str);
-static char *efl_to_image_path(AppData *ad, int type_index, const char *str);
+//static char* make_close_tag(Eina_List* nodes);
+static char* do_not_convert(AppData *ad, int type_index, const char *str);
+static char* html_to_efl(AppData *ad, int type_index, const char *str);
+static char* efl_to_html(AppData *ad, int type_index, const char *str);
+static char* text_to_html(AppData *ad, int type_index, const char *str);
+static char* text_to_efl(AppData *ad, int type_index, const char *str);
+static char* to_text(AppData *ad, int type_index, const char *str);
+static char* image_path_to_html(AppData *ad, int type_index, const char *str);
+static char* image_path_to_efl(AppData *ad, int type_index, const char *str);
+//static char* image_path_to_text(AppData *ad, int type_index, const char *str);
+//static char* efl_to_efl(AppData *ad, int type_index, const char *str);
+//static char* html_to_html(AppData *ad, int type_index, const char *str);
+static char* image_path_to_image_path(AppData *ad, int type_index, const char *str);
+static char* html_to_image_path(AppData *ad, int type_index, const char *str);
+static char* efl_to_image_path(AppData *ad, int type_index, const char *str);
 
 ENTRY_EMOTICON_S emotion_name_table[ENTRY_EMOTICON_MAX] = {
 	[ENTRY_EMOTICON_HAPPY] = {"emoticon/happy", ":-)"},
@@ -350,10 +350,10 @@ static PTagNode _get_start_node(const char *str);
 static PTagNode _get_next_node(PTagNode prev);
 static void _delete_node(PTagNode node);
 static void _link_match_tags(Eina_List *nodes);
-static char *_get_tag_value(const char *tag_str, const char *tag_name);
-static char *_convert_to_html(Eina_List* nodes);
+static char* _get_tag_value(const char *tag_str, const char *tag_name);
+static char* _convert_to_html(Eina_List* nodes);
 static void _set_EFL_tag_data(Eina_List* nodes);
-static char *_convert_to_edje(Eina_List* nodes);
+static char* _convert_to_edje(Eina_List* nodes);
 static void _set_HTML_tag_data(Eina_List* nodes);
 static void cleanup_tag_list(Eina_List *nodeList);
 static PFontTagData _set_EFL_font_data(PFontTagData data, const char *tag_str);
@@ -592,7 +592,7 @@ _link_match_tags(Eina_List *nodes)
 	eina_list_free(stack);
 }
 
-static char *
+static char*
 _get_tag_value(const char *tag_str, const char *tag_name)
 {
 	if (!tag_name || !tag_str)
@@ -828,7 +828,7 @@ _dumpNode(Eina_List* nodes)
 	}
 }
 
-static char *
+static char*
 _convert_to_html(Eina_List* nodes)
 {
 	PTagNode trail;
@@ -928,7 +928,7 @@ _convert_to_html(Eina_List* nodes)
 #define IMAGE_DEFAULT_HEIGHT "180"
 
 
-static char *
+static char*
 _convert_to_edje(Eina_List* nodes)
 {
 	PTagNode trail;
@@ -1051,7 +1051,7 @@ _convert_to_edje(Eina_List* nodes)
 	return ret;
 }
 
-char *string_for_entry_get(AppData *ad, int type_index, const char *str)
+char* x_string_for_entry_get(AppData *ad, int type_index, const char *str)
 {
 	DBG("type_index: %d str: %s ", type_index, str);
 	if (ad->targetAtoms[type_index].convert_to_entry)
@@ -1072,7 +1072,7 @@ char *string_for_image_path_get(AppData *ad, int type_index, const char *str)
 	return image_path;
 }
 /*
-static char *make_close_tag(Eina_List* nodes)
+static char* make_close_tag(Eina_List* nodes)
 {
 	CALLED();
 	PTagNode trail;
@@ -1102,7 +1102,7 @@ static char *make_close_tag(Eina_List* nodes)
 	return ret;
 }
 */
-static char *do_not_convert(AppData *ad, int type_index, const char *str)
+static char* do_not_convert(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	if (type_index != ATOM_INDEX_HTML)
@@ -1113,13 +1113,13 @@ static char *do_not_convert(AppData *ad, int type_index, const char *str)
 	return SAFE_STRDUP(str);
 }
 /*
-   static char *efl_to_efl(AppData *ad, int type_index, const char *str)
+   static char* efl_to_efl(AppData *ad, int type_index, const char *str)
    {
    CALLED();
    return NULL;
    }
 
-   static char *html_to_html(AppData *ad, int type_index, const char *str)
+   static char* html_to_html(AppData *ad, int type_index, const char *str)
    {
    CALLED();
    return NULL;
@@ -1128,7 +1128,7 @@ static char *do_not_convert(AppData *ad, int type_index, const char *str)
 
 #define IMAGE_DEFAULT_WIDTH "240"
 #define IMAGE_DEFAULT_HEIGHT "180"
-static char *make_image_path_tag(int type_index, const char *str)
+static char* make_image_path_tag(int type_index, const char *str)
 {
 	char *img_tag_str = "file://%s";
 	char *efl_img_tag = "<item absize="IMAGE_DEFAULT_WIDTH"x"IMAGE_DEFAULT_HEIGHT" href=file://%s>";
@@ -1158,32 +1158,32 @@ static char *make_image_path_tag(int type_index, const char *str)
 }
 
 /*
-static char *image_path_to_text(AppData *ad, int type_index, const char *str)
+static char* image_path_to_text(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	return make_image_path_tag(ATOM_INDEX_TEXT, str);
 }
 */
 
-static char *image_path_to_html(AppData *ad, int type_index, const char *str)
+static char* image_path_to_html(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	return make_image_path_tag(ATOM_INDEX_HTML, str);
 }
 
-static char *image_path_to_efl(AppData *ad, int type_index, const char *str)
+static char* image_path_to_efl(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	return make_image_path_tag(ATOM_INDEX_EFL, str);
 }
 
-static char *image_path_to_image_path(AppData *ad, int type_index, const char *str)
+static char* image_path_to_image_path(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	return make_image_path_tag(ATOM_INDEX_IMAGE, str);
 }
 
-static char *html_to_image_path(AppData *ad, int type_index, const char *str)
+static char* html_to_image_path(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	Eina_Strbuf *sbuf = eina_strbuf_new();
@@ -1244,7 +1244,7 @@ static char *html_to_image_path(AppData *ad, int type_index, const char *str)
 	return NULL;
 }
 
-static char *efl_to_image_path(AppData *ad, int type_index, const char *str)
+static char* efl_to_image_path(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	Eina_Strbuf *sbuf = eina_strbuf_new();
@@ -1297,7 +1297,7 @@ static char *efl_to_image_path(AppData *ad, int type_index, const char *str)
 	return NULL;
 }
 
-static char *markup_to_entry(AppData *ad, int type_index, const char *str)
+static char* markup_to_entry(AppData *ad, int type_index, const char *str)
 {
 	CALLED();
 	if (!str)
@@ -1363,13 +1363,13 @@ static char *markup_to_entry(AppData *ad, int type_index, const char *str)
 	return entry_str;
 }
 
-static char *polaris_to_entry(AppData *ad, int type_index, const char *str)
+static char* polaris_to_entry(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	return markup_to_entry(ad, type_index, str);
 }
 
-static char *html_to_entry(AppData *ad, int type_index, const char *str)
+static char* html_to_entry(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	return markup_to_entry(ad, type_index, str);
@@ -1458,7 +1458,7 @@ char *entry_convert_emoticon_to_normal_text(const char *src_text)
 	return dst_str;
 }
 
-static char *efl_to_entry(AppData *ad, int type_index, const char *str)
+static char* efl_to_entry(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 
@@ -1468,13 +1468,13 @@ static char *efl_to_entry(AppData *ad, int type_index, const char *str)
 	return normal_text;
 }
 
-static char *image_path_to_entry(AppData *ad, int type_index, const char *str)
+static char* image_path_to_entry(AppData *ad, int type_index, const char *str)
 {
 	CALLED();
 	return NULL;
 }
 
-static char *text_to_entry(AppData *ad, int type_index, const char *str)
+static char* text_to_entry(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	char *markup = NULL;
@@ -1527,7 +1527,7 @@ static void cleanup_tag_list(Eina_List *nodeList)
 	eina_list_free(nodeList);
 }
 
-static char *html_to_efl(AppData *ad, int type_index, const char *str)
+static char* html_to_efl(AppData *ad, int type_index, const char *str)
 {
 	CALLED();
 	Eina_List *nodeList = NULL;
@@ -1539,7 +1539,7 @@ static char *html_to_efl(AppData *ad, int type_index, const char *str)
 	return ret;
 }
 
-static char *efl_to_html(AppData *ad, int type_index, const char *str)
+static char* efl_to_html(AppData *ad, int type_index, const char *str)
 {
 	CALLED();
 	Eina_List *nodeList = NULL;
@@ -1551,7 +1551,7 @@ static char *efl_to_html(AppData *ad, int type_index, const char *str)
 	return ret;
 }
 
-static char *text_to_html(AppData *ad, int type_index, const char *str)
+static char* text_to_html(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	char *markup = NULL;
@@ -1561,7 +1561,7 @@ static char *text_to_html(AppData *ad, int type_index, const char *str)
 	return html;
 }
 
-static char *text_to_efl(AppData *ad, int type_index, const char *str)
+static char* text_to_efl(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	char *ret = NULL;
@@ -1571,7 +1571,7 @@ static char *text_to_efl(AppData *ad, int type_index, const char *str)
 	return ret;
 }
 
-static char *to_text(AppData *ad, int type_index, const char *str)
+static char* to_text(AppData *ad, int type_index, const char *str)
 {
 	DBG("str: %s", str);
 	char *entry_text = NULL;

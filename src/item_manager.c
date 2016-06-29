@@ -101,9 +101,10 @@ CNP_ITEM *item_add_by_CNP_ITEM(AppData *ad, CNP_ITEM *item, Eina_Bool storage, E
 		item_free(ditem, EINA_TRUE);
 	}
 
+#ifdef HAVE_X11
 	slot_property_set(ad, -1);
 	slot_item_count_set(ad);
-
+#endif
 	if (show_msg)
 	{
 		if (duplicated)
@@ -255,7 +256,12 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool
 	if (!item)
 		return NULL;
 
+#ifdef HAVE_X11
 	item->type_index = atom_type_index_get(ad, type);
+#else
+   /* FIXME : Could handle various types later */
+	item->type_index = ATOM_INDEX_TEXT;
+#endif
 
 	if (item->type_index == ATOM_INDEX_TEXT)
 		item->gitem_style = GRID_ITEM_STYLE_TEXT;
@@ -385,9 +391,10 @@ void item_delete_by_CNP_ITEM(AppData *ad, CNP_ITEM *item)
 	}
 	ad->item_list = eina_list_remove(ad->item_list, item);
 	item_free(item, EINA_TRUE);
+#ifdef HAVE_X11
 	slot_property_set(ad, -1);
 	slot_item_count_set(ad);
-
+#endif
 	if (item_count_get(ad, ATOM_INDEX_COUNT_ALL) == 0)
 	{
 		_delete_mode_set(ad, EINA_FALSE);
