@@ -8,11 +8,21 @@ SET(VERSION 0.1.0)
 
 SET(SRCS src/main.c
 	src/item_manager.c
-	src/xconverter.c
-	src/xhandler.c
 	src/clipdrawer.c
 	src/storage.c
 )
+
+IF (WAYLAND_SUPPORT)
+SET(SRCS ${SRCS} src/wlhandler.c
+	src/wlconverter.c
+)
+ENDIF (WAYLAND_SUPPORT)
+
+IF (X11_SUPPORT)
+SET(SRCS ${SRCS} src/xconverter.c
+	src/xhandler.c
+)
+ENDIF (X11_SUPPORT)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -20,6 +30,10 @@ IF ( MDM_ENABLE )
 	 ADD_DEFINITIONS( -DMDM_ENABLE )
 	 SET(MDM_REQUIRED_PKGS "mdm")
 ENDIF ( MDM_ENABLE )
+
+IF (WAYLAND_SUPPORT)
+	ADD_DEFINITIONS("-DHAVE_WAYLAND")
+ENDIF (WAYLAND_SUPPORT)
 
 INCLUDE(FindPkgConfig)
 	pkg_check_modules(pkgs REQUIRED elementary eet appcore-efl appcore-common eina evas ecore ecore-file ecore-wayland ecore-evas edje ecore-input notification vconf vconf-internal-keys libsystemd-daemon ${MDM_REQUIED_PKGS})

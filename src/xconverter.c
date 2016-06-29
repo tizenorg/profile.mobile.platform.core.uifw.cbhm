@@ -1051,12 +1051,12 @@ _convert_to_edje(Eina_List* nodes)
 	return ret;
 }
 
-char *string_for_entry_get(AppData *ad, int type_index, const char *str)
+char* x_string_for_entry_get(AppData *ad, int type_index, const char *str)
 {
-	DBG("type_index: %d str: %s ", type_index, str);
-	if (ad->targetAtoms[type_index].convert_to_entry)
-		return ad->targetAtoms[type_index].convert_to_entry(ad, type_index, str);
-	return NULL;
+   DBG("type_index: %d str: %s ", type_index, str);
+   if (ad->targetAtoms[type_index].convert_to_entry)
+      return ad->targetAtoms[type_index].convert_to_entry(ad, type_index, str);
+   return NULL;
 }
 
 char *string_for_image_path_get(AppData *ad, int type_index, const char *str)

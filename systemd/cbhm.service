@@ -1,15 +1,14 @@
 [Unit]
 Description=CBHM
-After=tizen-runtime.target e17.service
-Requires=tizen-runtime.target
+#After=tizen-runtime.target e17.service
+#Requires=tizen-runtime.target
 
 [Service]
-User=app
-Group=app
-SmackProcessLabel=cbhm
+User=owner
+Group=users
 Type=simple
 ExecStart=/usr/apps/org.tizen.cbhm/bin/cbhm
-EnvironmentFile=/run/tizen-mobile-env
+EnvironmentFile=/run/tizen-system-env
 
 [Install]
 WantedBy=multi-user.target
