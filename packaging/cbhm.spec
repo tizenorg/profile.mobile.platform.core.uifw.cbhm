@@ -1,3 +1,6 @@
+%bcond_with wayland
+%bcond_with x
+
 Name:       cbhm
 Summary:    cbhm application
 Version:    0.1.235
@@ -47,7 +50,18 @@ export TARGET=2.3-mobile
 
 %define PREFIX /usr/apps/org.tizen.cbhm
 
-rm -rf CMakeFiles CMackCache.txt && cmake . -DCMAKE_INSTALL_PREFIX=%{PREFIX}
+rm -rf CMakeFiles CMackCache.txt && cmake . -DCMAKE_INSTALL_PREFIX=%{PREFIX}  \
+%if %{with wayland}
+	-DWAYLAND_SUPPORT=On \
+%else
+	-DWAYLAND_SUPPORT=Off \
+%endif
+%if %{with x}
+	-DX11_SUPPORT=On
+%else
+	-DX11_SUPPORT=Off
+%endif
+
 make %{?jobs:-j%jobs}
 
 %install

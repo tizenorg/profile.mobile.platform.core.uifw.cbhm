@@ -20,10 +20,7 @@
 
 #include <Elementary.h>
 
-//should be in build script?
-#define HAVE_WL 1
-
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 #include <Ecore_Wayland.h>
 #endif
 
@@ -48,6 +45,8 @@ typedef struct _CNP_ITEM CNP_ITEM;
 typedef struct _XHandlerData XHandlerData;
 typedef struct _StorageData StorageData;
 typedef char *(*text_converter_func)(AppData *ad, int type_index, const char *str);
+
+typedef struct _WlHandlerData WlHandlerData;
 
 #define ITEM_CNT_MAX 20
 #define COPIED_DATA_STORAGE_DIR DATADIR"/.cbhm_files"
@@ -98,6 +97,9 @@ struct _AppData {
 
 	ClipdrawerData *clipdrawer;
 	XHandlerData *xhandler;
+#ifdef HAVE_WAYLAND
+	WlHandlerData *wlhandler;
+#endif
 	StorageData *storage;
 
 	CNP_ITEM *clip_selected_item;

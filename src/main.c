@@ -168,6 +168,9 @@ static int app_create(void *data)
 	//set env for root.
 	setenv("HOME", "/", 1);
 	if (!(ad->xhandler = init_xhandler(ad))) return EXIT_FAILURE;
+#ifdef HAVE_WAYLAND
+	if (!(ad->wlhandler = init_wlhandler(ad))) return EXIT_FAILURE;
+#endif
 	if (!(ad->storage = init_storage(ad))) return EXIT_FAILURE;
 	slot_item_count_set(ad);
 

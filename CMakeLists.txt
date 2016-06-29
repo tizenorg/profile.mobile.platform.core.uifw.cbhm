@@ -10,6 +10,7 @@ SET(SRCS src/main.c
 	src/item_manager.c
 	src/xconverter.c
 	src/xhandler.c
+	src/wlhandler.c	
 	src/clipdrawer.c
 	src/storage.c
 )
@@ -20,6 +21,10 @@ IF ( MDM_ENABLE )
 	 ADD_DEFINITIONS( -DMDM_ENABLE )
 	 SET(MDM_REQUIRED_PKGS "mdm")
 ENDIF ( MDM_ENABLE )
+
+IF (WAYLAND_SUPPORT)
+	ADD_DEFINITIONS("-DHAVE_WAYLAND")
+ENDIF (WAYLAND_SUPPORT)
 
 INCLUDE(FindPkgConfig)
 	pkg_check_modules(pkgs REQUIRED elementary eet appcore-efl appcore-common eina evas ecore ecore-file ecore-wayland ecore-evas edje ecore-input notification vconf vconf-internal-keys libsystemd-daemon ${MDM_REQUIED_PKGS})
