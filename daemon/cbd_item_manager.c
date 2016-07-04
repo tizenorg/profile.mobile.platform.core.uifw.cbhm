@@ -15,10 +15,15 @@
  *
  */
 
-#include <notification.h>
 #include <time.h>
-#include "item_manager.h"
-#include "clipdrawer.h"
+#include <notification.h>
+
+#include "cbd_utils.h"
+#include "cbd_appdata.h"
+#include "cbd_handler.h"
+#include "cbd_converter.h"
+#include "cbd_clipdrawer.h"
+#include "cbd_item_manager.h"
 
 static void show_notification(CNP_ITEM *item, const char *msg)
 {
@@ -28,7 +33,7 @@ static void show_notification(CNP_ITEM *item, const char *msg)
 
 static void item_free(CNP_ITEM *item, Eina_Bool storage)
 {
-	CALLED();
+	FN_CALL();
 	if (!item)
 	{
 		ERR("WRONG PARAMETER in %s", __func__);
@@ -259,7 +264,7 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool
 #ifdef HAVE_X11
 	item->type_index = atom_type_index_get(ad, type);
 #else
-   /* FIXME : Could handle various types later */
+	/* FIXME : Could handle various MIME types later */
 	item->type_index = ATOM_INDEX_TEXT;
 #endif
 
@@ -381,11 +386,9 @@ CNP_ITEM *item_get_last(AppData *ad)
 
 void item_delete_by_CNP_ITEM(AppData *ad, CNP_ITEM *item)
 {
-	CALLED();
-	ClipdrawerData *cd = ad->clipdrawer;
+	FN_CALL();
 
-	if (!item)
-	{
+	if (!item) {
 		ERR("WRONG PARAMETER in %s", __func__);
 		return;
 	}
@@ -395,8 +398,7 @@ void item_delete_by_CNP_ITEM(AppData *ad, CNP_ITEM *item)
 	slot_property_set(ad, -1);
 	slot_item_count_set(ad);
 #endif
-	if (item_count_get(ad, ATOM_INDEX_COUNT_ALL) == 0)
-	{
+	if (item_count_get(ad, ATOM_INDEX_COUNT_ALL) == 0) {
 		_delete_mode_set(ad, EINA_FALSE);
 		clipdrawer_lower_view(ad);
 	}
@@ -404,7 +406,7 @@ void item_delete_by_CNP_ITEM(AppData *ad, CNP_ITEM *item)
 
 void item_delete_by_data(AppData *ad, void *data, int len)
 {
-	CALLED();
+	FN_CALL();
 	if (!ad || !data)
 	{
 		ERR("WRONG PARAMETER in %s", __func__);
@@ -417,7 +419,7 @@ void item_delete_by_data(AppData *ad, void *data, int len)
 
 void item_delete_by_index(AppData *ad, int index)
 {
-	CALLED();
+	FN_CALL();
 	if (!ad || eina_list_count(ad->item_list) <= index || 0 > index)
 	{
 		ERR("WRONG PARAMETER in %s", __func__);
@@ -430,7 +432,7 @@ void item_delete_by_index(AppData *ad, int index)
 
 void item_clear_all(AppData *ad)
 {
-	CALLED();
+	FN_CALL();
 	while(ad->item_list)
 	{
 		CNP_ITEM *item = eina_list_data_get(ad->item_list);

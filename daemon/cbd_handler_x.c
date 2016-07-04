@@ -15,12 +15,13 @@
  *
  */
 
-#include "xhandler.h"
-
 #ifdef HAVE_X11
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #endif
+
+#include "cbd_utils.h"
+#include "cbd_handler_x.h"
 
 #ifdef HAVE_X11
 Eina_Bool cbhm_send_event(AppData *ad, Ecore_X_Window xwin, char *msg)
@@ -46,7 +47,7 @@ Eina_Bool cbhm_send_event(AppData *ad, Ecore_X_Window xwin, char *msg)
 
 Ecore_X_Window get_selection_owner(AppData *ad, Ecore_X_Selection selection)
 {
-	CALLED();
+	FN_CALL();
 	if (!ad) return 0;
 	Ecore_X_Atom sel = 0;
 	switch(selection)
@@ -65,7 +66,7 @@ Ecore_X_Window get_selection_owner(AppData *ad, Ecore_X_Selection selection)
 
 Eina_Bool is_cbhm_selection_owner(AppData *ad, Ecore_X_Selection selection)
 {
-	CALLED();
+	FN_CALL();
 	if (!ad) return EINA_FALSE;
 	Ecore_X_Window sel_owner = get_selection_owner(ad, selection);
 	DBG("selection_owner: 0x%x, x_event_win: 0x%x", sel_owner, ad->x_event_win);
@@ -78,7 +79,7 @@ Eina_Bool is_cbhm_selection_owner(AppData *ad, Ecore_X_Selection selection)
 #ifdef HAVE_X11
 Eina_Bool set_selection_owner(AppData *ad, Ecore_X_Selection selection, CNP_ITEM *item)
 {
-	CALLED();
+	FN_CALL();
 	if (!ad) return EINA_FALSE;
 
 	if (!item && is_cbhm_selection_owner(ad, selection))
@@ -111,7 +112,7 @@ Eina_Bool set_selection_owner(AppData *ad, Ecore_X_Selection selection, CNP_ITEM
 
 static Eina_Bool selection_timer_cb(void *data)
 {
-	CALLED();
+	FN_CALL();
 	AppData *ad = data;
 #ifdef HAVE_X11
 	XHandlerData *xd = ad->xhandler;
@@ -129,7 +130,7 @@ static Eina_Bool selection_timer_cb(void *data)
 
 static Eina_Bool _xsel_clear_cb(void *data, int type, void *event)
 {
-	CALLED();
+	FN_CALL();
 	if (!data || !event) return EINA_TRUE;
 	AppData *ad = data;
 	ClipdrawerData *cd = ad->clipdrawer;
@@ -165,7 +166,7 @@ static Eina_Bool _xsel_clear_cb(void *data, int type, void *event)
 
 static Eina_Bool _xsel_request_cb(void *data, int type, void *event)
 {
-	CALLED();
+	FN_CALL();
 #ifdef MDM_ENABLE
 	if (!data || !event || !_mdm_get_allow_clipboard()) return ECORE_CALLBACK_PASS_ON;
 #else
@@ -250,7 +251,7 @@ static Eina_Bool _xsel_request_cb(void *data, int type, void *event)
 #ifdef HAVE_X11
 static void send_convert_selection_target(AppData *ad, Ecore_X_Selection_Data_Targets *targets_data)
 {
-	CALLED();
+	FN_CALL();
 	/*	struct _Ecore_X_Selection_Data_Targets {
 		Ecore_X_Selection_Data data;
 		struct _Ecore_X_Selection_Data {
@@ -347,7 +348,7 @@ static void _get_selection_data_files(AppData* ad, Ecore_X_Selection_Data_Files 
 
 static Eina_Bool _xsel_notify_cb(void *data, int type, void *event)
 {
-	CALLED();
+	FN_CALL();
 	if (!data || !event)
 		return ECORE_CALLBACK_PASS_ON;
 
@@ -461,7 +462,7 @@ set_clipboard_selection_owner:
 
 static Eina_Bool _xclient_msg_cb(void *data, int type, void *event)
 {
-	CALLED();
+	FN_CALL();
 	if (!data || !event) return ECORE_CALLBACK_PASS_ON;
 
 	AppData *ad = data;
@@ -709,7 +710,7 @@ static Eina_Bool _xclient_msg_cb(void *data, int type, void *event)
 
 static Eina_Bool _xfocus_out_cb(void *data, int type, void *event)
 {
-	CALLED();
+	FN_CALL();
 	if (!data || !event) return ECORE_CALLBACK_PASS_ON;
 
 	AppData *ad = data;
@@ -749,7 +750,7 @@ static Eina_Bool _xproperty_notify_cb(void *data, int type, void *event)
 
 static Eina_Bool _xwin_destroy_cb(void *data, int type, void *event)
 {
-	CALLED();
+	FN_CALL();
 	if (!data || !event) return ECORE_CALLBACK_PASS_ON;
 
 	AppData *ad = data;
@@ -971,7 +972,7 @@ Eina_Bool _mdm_get_allow_clipboard()
 #ifdef HAVE_X11
 			ecore_x_window_size_get(ecore_x_window_root_first_get(), &w, &h);
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 			ecore_wl_screen_size_get(&w, &h);
 #endif
 			evas_object_resize(win, w, h);

@@ -15,19 +15,32 @@
  *
  */
 
-#ifndef _WLCNPHANDLER_H_
-#define _WLCNPHANDLER_H_
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__
 
-#include <Ecore.h>
-#include <Ecore_Wayland.h>
 
-struct _WlHandlerData {
-	Ecore_Event_Handler *wl_send_handler;
-	Ecore_Event_Handler *wl_receive_handler;
+#ifdef HAVE_X11
+#include "cbd_handler_x.h"
+#endif
+#ifdef HAVE_WAYLAND
+#include "cbd_handler_wl.h"
+#endif
+
+#include "cbd.h"
+
+typedef char* (*text_converter_func)(void *ad, int type_index, const char *str);
+
+struct _TargetHandler {
+#ifdef HAVE_X11
+	Ecore_X_Atom *atom;
+#else
+	unsigned int *atom;
+#endif
+	char **name;
+	int atom_cnt;
+	text_converter_func convert_to_entry;
+	text_converter_func convert_to_target[ATOM_INDEX_MAX];
 };
 
-#include "cbhm.h"
 
-WlHandlerData *init_wlhandler(AppData *data);
-
-#endif
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__ */

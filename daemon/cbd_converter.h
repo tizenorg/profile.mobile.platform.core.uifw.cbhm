@@ -15,9 +15,17 @@
  *
  */
 
-#include "wlconverter.h"
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__
 
-char* string_for_entry_get(AppData *ad, int type_index, const char *str)
-{
-   return NULL;
-}
+#ifdef HAVE_X11
+#include "cbd_converter_x.h"
+#endif
+#ifdef HAVE_WAYLAND
+#include "cbd_converter_wl.h"
+#endif
+
+char* string_for_entry_get(AppData *ad, int type_index, const char *str);
+char* string_for_image_path_get(AppData *ad, int type_index, const char *str);
+
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__ */

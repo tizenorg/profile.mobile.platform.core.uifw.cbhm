@@ -15,30 +15,14 @@
  *
  */
 
-#include "wlhandler.h"
+#include "cbd_converter_wl.h"
 
-static Eina_Bool _wl_selection_send(void *udata, int type EINA_UNUSED,
-		void *event)
+char* wl_string_for_entry_get(AppData *ad, int type_index, const char *str)
 {
-   return ECORE_CALLBACK_PASS_ON;
+   return NULL;
 }
 
-static Eina_Bool _wl_selection_receive(void *udata, int type EINA_UNUSED,
-		void *event)
+char* wl_string_for_image_path_get(AppData *ad, int type_index, const char *str)
 {
-   return ECORE_CALLBACK_PASS_ON;
-}
-
-WlHandlerData *init_wlhandler(AppData *ad)
-{
-	WlHandlerData *wld = CALLOC(1, sizeof(WlHandlerData));
-	if (!wld)
-		return NULL;
-
-	wld->wl_send_handler = ecore_event_handler_add(
-			ECORE_WL_EVENT_DATA_SOURCE_SEND, _wl_selection_send, NULL);
-	wld->wl_receive_handler = ecore_event_handler_add(
-			ECORE_WL_EVENT_SELECTION_DATA_READY, _wl_selection_receive, NULL);
-
-   return wld;
+	return NULL;
 }

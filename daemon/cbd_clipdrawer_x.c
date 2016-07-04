@@ -15,23 +15,4 @@
  *
  */
 
-#ifndef _STORAGE_H_
-#define _STORAGE_H_
-
-#include <Eet.h>
-#include <Eina.h>
-#include <Ecore.h>
-
-#include "cbhm.h"
-
-typedef double indexType; /* Ecore_Time */
-
-struct _StorageData {
-	Eet_File *ef;
-	indexType indexTable[ITEM_CNT_MAX];
-	CNP_ITEM *itemTable[ITEM_CNT_MAX];
-};
-
-StorageData *init_storage(AppData *ad);
-void depose_storage(StorageData *sd);
-#endif
+#include "cbd_clipdrawer_x.h"

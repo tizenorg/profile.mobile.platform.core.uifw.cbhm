@@ -15,20 +15,19 @@
  *
  */
 
-#ifndef _CLIPDRAWER_H_
-#define _CLIPDRAWER_H_
-
-//should be in build script?
-#define HAVE_WL 1
-
-#ifdef HAVE_WL
-#include <Ecore_Wayland.h>
-#endif
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_H__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_H__
 
 #ifdef HAVE_X11
 //#include <Ecore_X.h>
 #endif
-#include <Elementary.h>
+#ifdef HAVE_WAYLAND
+#include <Ecore_Wayland.h>
+#endif
+
+#include "cbd.h"
+#include "cbd_appdata.h"
+
 typedef enum _AnimStatus AnimStatus;
 enum _AnimStatus {
 	STATUS_NONE = 0,
@@ -56,10 +55,8 @@ struct _ClipdrawerData {
 	int locked_item_count;
 #ifdef HAVE_X11
 	Ecore_X_Window x_main_win;
-#else
-	unsigned int x_main_win;
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 	Ecore_Wl_Window *wl_main_win;
 #endif
 
@@ -86,16 +83,14 @@ struct _ClipdrawerData {
 	Evas_Object *gesture_layer;
 };
 
-#include "cbhm.h"
-
 Eina_Bool delete_mode;
 
 void set_rotation_to_clipdrawer(AppData *ad);
-void clipdrawer_activate_view(AppData* ad);
-void clipdrawer_lower_view(AppData* ad);
+void clipdrawer_activate_view(AppData *ad);
+void clipdrawer_lower_view(AppData *ad);
 ClipdrawerData *init_clipdrawer(AppData *ad);
 void depose_clipdrawer(ClipdrawerData *cd);
 void _delete_mode_set(AppData *ad, Eina_Bool del_mode);
 void clipdrawer_paste_textonly_set(AppData *ad, Eina_Bool textonly);
 
-#endif // _CLIPDRAWER_H_
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_H__ */

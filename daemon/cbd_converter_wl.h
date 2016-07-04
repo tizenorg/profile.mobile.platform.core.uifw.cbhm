@@ -15,15 +15,11 @@
  *
  */
 
-#include "converter.h"
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
 
-char* string_for_entry_get(AppData *ad, int type_index, const char *str)
-{
-#ifdef HAVE_X11
-   return x_string_for_entry_get(ad, type_index, str);
-#else
-   return wl_string_for_entry_get(ad, type_index, str);
-#endif
+#include "cbd_appdata.h"
 
-   return NULL;
-}
+char* wl_string_for_entry_get(AppData *ad, int type_index, const char *str);
+char* wl_string_for_image_path_get(AppData *ad, int type_index, const char *str);
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__ */

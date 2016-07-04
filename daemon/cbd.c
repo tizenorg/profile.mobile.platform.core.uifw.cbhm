@@ -31,7 +31,10 @@
 #include <X11/extensions/XIproto.h>
 #endif
 
-#include "cbhm.h"
+#include "cbd_utils.h"
+#include "cbd_appdata.h"
+#include "cbd_handler.h"
+#include "cbd.h"
 
 #define CLIPBOARD_MANAGER_WINDOW_TITLE_STRING "X11_CLIPBOARD_HISTORY_MANAGER"
 #define ATOM_CLIPBOARD_MANAGER_NAME "CLIPBOARD_MANAGER"
@@ -39,24 +42,6 @@
 static AppData *g_main_ad = NULL;
 
 int _log_domain = -1;
-
-void *d_malloc(const char *func, int line, size_t size)
-{
-	char *m = malloc(size);
-	DBG("in %s, %d: 0x%p = malloc(%d)", func, line, m, size);
-	return m;
-}
-void *d_calloc(const char *func, int line, size_t n, size_t size)
-{
-	char *m = calloc(n, size);
-	DBG("in %s, %d: 0x%p = calloc(%d)", func, line, m, size);
-	return m;
-}
-void d_free(const char *func, int line, void *m)
-{
-	DBG("in %s, %d: free(0x%p)", func, line, m);
-	free(m);
-}
 
 static Eina_Bool setClipboardManager(AppData *ad)
 {
@@ -94,7 +79,7 @@ static Eina_Bool setClipboardManager(AppData *ad)
 		}
 	}
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 	//FIXME: Implement it
 	return EINA_TRUE;
 #endif
@@ -114,39 +99,37 @@ static void set_x_window(Ecore_X_Window x_event_win, Ecore_X_Window x_root_win)
 			XA_WINDOW, 32, &x_event_win, 1);
 	ecore_x_flush();
 }
-#else
-static void set_x_window(Ecore_X_Window x_event_win, Ecore_X_Window x_root_win)
-{
-}
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 static void set_wl_window(Ecore_Wl_Window *wl_event_win)
 {
-	ecore_wl_window_title_set(wl_event_win, CLIPBOARD_MANAGER_WINDOW_TITLE_STRING);
+	FN_CALL();
+	ecore_wl_window_title_set(wl_event_win,
+			CLIPBOARD_MANAGER_WINDOW_TITLE_STRING);
 	ecore_wl_flush();
 }
 #endif
 
 static int app_create(void *data)
 {
+	FN_CALL();
+
 	AppData *ad = (AppData *)data;
 
 	elm_app_base_scale_set(2.6);
 #ifdef HAVE_X11
 	ecore_x_init(ad->x_disp);
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 	ecore_wl_init(ad->wl_disp);
 #endif
 	_log_domain = eina_log_domain_register("cbhm", EINA_COLOR_LIGHTBLUE);
-	if (!_log_domain)
-		{
-			EINA_LOG_ERR("could not register cbhm log domain.");
-			_log_domain = EINA_LOG_DOMAIN_GLOBAL;
-		}
+	if (!_log_domain) {
+		EINA_LOG_ERR("could not register cbhm log domain.");
+		_log_domain = EINA_LOG_DOMAIN_GLOBAL;
+	}
 
-	if (!setClipboardManager(ad))
-	{
+	if (!setClipboardManager(ad)) {
 		DBG("Clipboard Manager set failed");
 		return EXIT_FAILURE;
 	}
@@ -154,18 +137,25 @@ static int app_create(void *data)
 #ifdef HAVE_X11
 	set_x_window(ad->x_event_win, ad->x_root_win);
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 	set_wl_window(ad->wl_event_win);
 #endif
 
-	if (!ecore_init()) return EXIT_FAILURE;
-	if (!ecore_evas_init()) return EXIT_FAILURE;
-	if (!edje_init()) return EXIT_FAILURE;
+	if (!ecore_init())
+		return EXIT_FAILURE;
+	if (!ecore_evas_init())
+		return EXIT_FAILURE;
+	if (!edje_init())
+		return EXIT_FAILURE;
 	ad->magic = CBHM_MAGIC;
 #ifdef HAVE_X11
 	init_target_atoms(ad);
 #endif
-	if (!(ad->clipdrawer = init_clipdrawer(ad))) return EXIT_FAILURE;
+	if (!(ad->clipdrawer = init_clipdrawer(ad)))
+		return EXIT_FAILURE;
+
+	/* to be identified by E20 */
+	elm_win_role_set(ad->clipdrawer->main_win, "cbhm");
 
 	//set env for root.
 	setenv("HOME", "/", 1);
@@ -173,9 +163,11 @@ static int app_create(void *data)
 	if (!(ad->xhandler = init_xhandler(ad))) return EXIT_FAILURE;
 #endif
 #ifdef HAVE_WAYLAND
-	if (!(ad->wlhandler = init_wlhandler(ad))) return EXIT_FAILURE;
+	if (!(ad->wlhandler = init_wlhandler(ad)))
+		return EXIT_FAILURE;
 #endif
-	if (!(ad->storage = init_storage(ad))) return EXIT_FAILURE;
+	if (!(ad->storage = init_storage(ad)))
+		return EXIT_FAILURE;
 #ifdef HAVE_X11
 	slot_item_count_set(ad);
 #endif
@@ -230,7 +222,7 @@ static int app_reset(bundle *b, void *data)
 	return 0;
 }
 
-static int _lang_changed(void *data)
+static int __lang_changed(void *event_info, void *data)
 {
 	return 0;
 }
@@ -252,7 +244,7 @@ int main(int argc, char *argv[])
 	g_main_ad = ad;
 
 	//appcore_set_i18n(PACKAGE, LOCALEDIR);
-	appcore_set_event_callback(APPCORE_EVENT_LANG_CHANGE, _lang_changed, NULL);
+	appcore_set_event_callback(APPCORE_EVENT_LANG_CHANGE, __lang_changed, NULL);
 
 	// Notyfication to systemd
 	sd_notify(1, "READY=1");

@@ -1,5 +1,5 @@
 [Unit]
-Description=CBHM
+Description=Clipboard History Manager
 #After=tizen-runtime.target e17.service
 #Requires=tizen-runtime.target
 

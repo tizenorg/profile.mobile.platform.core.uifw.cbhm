@@ -15,7 +15,8 @@
  *
  */
 
-#include "xconverter.h"
+#include "cbd_utils.h"
+#include "cbd_converter_x.h"
 
 static char* html_to_entry(AppData *ad, int type_index, const char *str);
 static char* efl_to_entry(AppData *ad, int type_index, const char *str);
@@ -154,7 +155,7 @@ static Eina_Bool targets_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *
 static Eina_Bool targets_converter(AppData *ad, int reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, int *ttype, int *tsize)
 #endif
 {
-	CALLED();
+	FN_CALL();
 
 	int count;
 	int i, j;
@@ -230,7 +231,7 @@ Eina_Bool generic_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *item, v
 Eina_Bool generic_converter(AppData *ad, int reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, int *ttype, int *tsize)
 #endif
 {
-	CALLED();
+	FN_CALL();
 
 	if (ad->targetAtoms[ATOM_INDEX_TARGET].atom[0] == reqAtom)
 		return targets_converter(ad, reqAtom, item, data_ret, size_ret, ttype, tsize);
@@ -1059,7 +1060,7 @@ char* x_string_for_entry_get(AppData *ad, int type_index, const char *str)
 	return NULL;
 }
 
-char *string_for_image_path_get(AppData *ad, int type_index, const char *str)
+char *x_string_for_image_path_get(AppData *ad, int type_index, const char *str)
 {
 	DBG("type_index: %d str: %s ", type_index, str);
 	char *image_path = NULL;
@@ -1074,7 +1075,7 @@ char *string_for_image_path_get(AppData *ad, int type_index, const char *str)
 /*
 static char* make_close_tag(Eina_List* nodes)
 {
-	CALLED();
+	FN_CALL();
 	PTagNode trail;
 	Eina_List *l;
 
@@ -1115,13 +1116,13 @@ static char* do_not_convert(AppData *ad, int type_index, const char *str)
 /*
    static char* efl_to_efl(AppData *ad, int type_index, const char *str)
    {
-   CALLED();
+   FN_CALL();
    return NULL;
    }
 
    static char* html_to_html(AppData *ad, int type_index, const char *str)
    {
-   CALLED();
+   FN_CALL();
    return NULL;
    }
  */
@@ -1299,7 +1300,7 @@ static char* efl_to_image_path(AppData *ad, int type_index, const char *str)
 
 static char* markup_to_entry(AppData *ad, int type_index, const char *str)
 {
-	CALLED();
+	FN_CALL();
 	if (!str)
 		return NULL;
 
@@ -1470,7 +1471,7 @@ static char* efl_to_entry(AppData *ad, int type_index, const char *str)
 
 static char* image_path_to_entry(AppData *ad, int type_index, const char *str)
 {
-	CALLED();
+	FN_CALL();
 	return NULL;
 }
 
@@ -1529,7 +1530,7 @@ static void cleanup_tag_list(Eina_List *nodeList)
 
 static char* html_to_efl(AppData *ad, int type_index, const char *str)
 {
-	CALLED();
+	FN_CALL();
 	Eina_List *nodeList = NULL;
 	nodeList = make_tag_list(type_index, str);
 	char *ret = _convert_to_edje(nodeList);
@@ -1541,7 +1542,7 @@ static char* html_to_efl(AppData *ad, int type_index, const char *str)
 
 static char* efl_to_html(AppData *ad, int type_index, const char *str)
 {
-	CALLED();
+	FN_CALL();
 	Eina_List *nodeList = NULL;
 	nodeList = make_tag_list(type_index, str);
 	char *ret = _convert_to_html(nodeList);

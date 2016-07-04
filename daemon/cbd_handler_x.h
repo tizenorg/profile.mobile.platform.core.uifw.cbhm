@@ -15,8 +15,8 @@
  *
  */
 
-#ifndef _XCNPHANDLER_H_
-#define _XCNPHANDLER_H_
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_X__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_X__
 
 #ifdef HAVE_X11
 #include <Ecore_X.h>
@@ -25,13 +25,6 @@
 #ifdef MDM_ENABLE
 #include <mdm.h>
 #endif
-
-enum ATOM_INDEX_COUNT {
-	ATOM_INDEX_COUNT_ALL = 0,
-	ATOM_INDEX_COUNT_TEXT = 1,
-	ATOM_INDEX_COUNT_IMAGE = 2,
-	ATOM_INDEX_COUNT_MAX = 3
-};
 
 struct _XHandlerData {
 	Ecore_Event_Handler *xsel_clear_handler;
@@ -58,7 +51,7 @@ struct _XHandlerData {
 	Ecore_Timer *selection_timer;
 };
 
-#include "cbhm.h"
+#include "cbd.h"
 
 XHandlerData *init_xhandler(AppData *data);
 void depose_xhandler(XHandlerData *xd);
@@ -77,4 +70,4 @@ Eina_Bool _mdm_get_allow_clipboard();	// magnolia only
 
 #define SELECTION_CHECK_TIME 10.0
 
-#endif
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_X__ */

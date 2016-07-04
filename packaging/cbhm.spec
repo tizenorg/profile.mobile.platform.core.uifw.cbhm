@@ -26,6 +26,7 @@ BuildRequires:  pkgconfig(vconf-internal-keys)
 BuildRequires:  edje-tools
 BuildRequires:  pkgconfig(libsystemd-daemon)
 BuildRequires:  gettext
+BuildRequires:  pkgconfig(dlog)
 %{?systemd_requires}
 
 %description
