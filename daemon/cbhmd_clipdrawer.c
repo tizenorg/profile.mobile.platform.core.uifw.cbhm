@@ -16,9 +16,13 @@
  */
 
 //#include <utilX.h>
-#include "clipdrawer.h"
-#include "item_manager.h"
-#include "xconverter.h"
+#include "cbhmd_clipdrawer.h"
+
+#include "cbhmd_appdata.h"
+#include "cbhmd_converter_x.h"
+#include "cbhmd_handler.h"
+#include "cbhmd_item_manager.h"
+#include "cbhmd_utils.h"
 
 #define EDJ_PATH DATADIR"/edje"
 #define APP_EDJ_FILE EDJ_PATH"/cbhmdrawer.edj"
@@ -56,14 +60,15 @@ static Ecore_X_Window isf_ise_window_get();
 static void set_transient_for(Ecore_X_Window x_main_win, Ecore_X_Window x_active_win);
 static void unset_transient_for(Ecore_X_Window x_main_win);
 static void set_focus_for_app_window(Ecore_X_Window x_main_win, Eina_Bool enable);
-#else
+#endif
+#ifdef HAVE_WAYLAND
 //static void setting_win(void *x_disp, unsigned int x_root_win, unsigned int x_main_win);
 static int isf_ise_window_get();
-static void set_transient_for(unsigned int x_main_win, unsigned int x_active_win);
-static void unset_transient_for(unsigned int x_main_win);
-static void set_focus_for_app_window(unsigned int x_main_win, Eina_Bool enable);
+static void set_transient_for(Ecore_Wl_Window *wl_main_win, Ecore_Wl_Window *wl_active_win);
+static void unset_transient_for(Ecore_Wl_Window *wl_main_win);
+static void set_focus_for_app_window(Ecore_Wl_Window *wl_main_win, Eina_Bool enable);
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 void setting_win(const char *wl_disp, Ecore_Wl_Window *wl_main_win);
 #endif
 
@@ -331,6 +336,7 @@ _title_delete_all_btn_access_activate_cb(void *data,
 
 ClipdrawerData* init_clipdrawer(AppData *ad)
 {
+	FN_CALL();
 	ClipdrawerData *cd = calloc(1, sizeof(ClipdrawerData));
 	const char *data;
 	Evas_Object *part_obj, *access_obj;
@@ -338,6 +344,7 @@ ClipdrawerData* init_clipdrawer(AppData *ad)
 	/* create and setting window */
 	if (!cd)
 		return NULL;
+
 	if (!(cd->main_win = create_win(cd, APPNAME)))
 	{
 		free(cd);
@@ -352,7 +359,7 @@ ClipdrawerData* init_clipdrawer(AppData *ad)
 
 	setting_win(ad->x_disp, ad->x_root_win, cd->x_main_win);
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 	if (!(cd->wl_main_win = elm_win_wl_window_get(cd->main_win)))
 	{
 		free(cd);
@@ -778,29 +785,29 @@ static Evas_Object *_grid_combined_content_get(void *data, Evas_Object *obj, con
 
 static void _grid_realized(void *data, Evas_Object *obj, void *event_info)
 {
-	Elm_Object_Item *gitem = (Elm_Object_Item *) event_info;
-	CNP_ITEM *item;
+	Elm_Object_Item *gitem = (Elm_Object_Item *)event_info;
+//	CNP_ITEM *item;
 
-	if (gitem)
-	{
-		item = elm_object_item_data_get(gitem);
+	if (gitem) {
+//		item = elm_object_item_data_get(gitem);
 
-	   if (delete_mode)
-	      elm_object_item_signal_emit(gitem, "elm,state,show,delbtn", "elm");
-	   else
-	      elm_object_item_signal_emit(gitem, "elm,state,hide,delbtn", "elm");
+		if (delete_mode)
+			elm_object_item_signal_emit(gitem, "elm,state,show,delbtn", "elm");
+		else
+			elm_object_item_signal_emit(gitem, "elm,state,hide,delbtn", "elm");
 	}
 }
 
 static void _create_cbhm_popup(AppData *ad)
 {
-	if (ad == NULL) return;
+	if (ad == NULL)
+		return;
 
 	ClipdrawerData *cd = ad->clipdrawer;
 	Evas_Object *btn1;
 	Evas_Object *btn2;
-	int w,h;
-	int rotations[4] = { 0, 90, 180, 270 };
+	int w = 0, h = 0;
+	int rotations[4] = {0, 90, 180, 270};
 
 	if (cd->popup_activate == EINA_TRUE)
 		return;
@@ -818,8 +825,14 @@ static void _create_cbhm_popup(AppData *ad)
 #ifdef HAVE_X11
 	ecore_x_icccm_name_class_set(elm_win_xwindow_get(cd->popup_win),"APP_POPUP", "APP_POPUP");
 #endif
+#ifdef HAVE_X11
 	set_focus_for_app_window((unsigned int)elm_win_xwindow_get(cd->popup_win) , EINA_FALSE);
 	set_transient_for((int)elm_win_xwindow_get(cd->popup_win), cd->x_main_win);
+#endif
+#ifdef HAVE_WAYLAND
+	set_focus_for_app_window(elm_win_wl_window_get(cd->popup_win) , EINA_FALSE);
+	set_transient_for(elm_win_wl_window_get(cd->popup_win), cd->wl_main_win);
+#endif
 	elm_win_wm_rotation_available_rotations_set(cd->popup_win, rotations, 4);
 	evas_object_show(cd->popup_win);
 
@@ -870,7 +883,7 @@ static void clipdrawer_ly_clicked(void *data, Evas_Object *obj, const char *emis
 #ifdef HAVE_X11
 static void set_focus_for_app_window(Ecore_X_Window x_main_win, Eina_Bool enable)
 {
-	    CALLED();
+	    FN_CALL();
 	    Eina_Bool accepts_focus;
 	    Ecore_X_Window_State_Hint initial_state;
 	    Ecore_X_Pixmap icon_pixmap;
@@ -885,8 +898,9 @@ static void set_focus_for_app_window(Ecore_X_Window x_main_win, Eina_Bool enable
         enable, initial_state, icon_pixmap, icon_mask, icon_window, window_group, is_urgent);
 	    DBG("set focus mode = %d", enable);
 }
-#else
-static void set_focus_for_app_window(unsigned int x_main_win, Eina_Bool enable)
+#endif
+#ifdef HAVE_WAYLAND
+static void set_focus_for_app_window(Ecore_Wl_Window *wl_main_win, Eina_Bool enable)
 {
 }
 #endif
@@ -990,7 +1004,7 @@ void unset_transient_for(Ecore_X_Window x_main_win)
 
 void setting_win(Ecore_X_Display *x_disp, Ecore_X_Window x_root_win, Ecore_X_Window x_main_win)
 {
-	CALLED();
+	FN_CALL();
 
 	Ecore_X_Atom ATOM_WINDOW_EFFECT_ENABLE = 0;
 	unsigned int effect_state = 0; // 0 : disabled effect // 1: enable effect
@@ -1018,13 +1032,14 @@ void setting_win(Ecore_X_Display *x_disp, Ecore_X_Window x_root_win, Ecore_X_Win
 #else
 static int isf_ise_window_get()
 {
+	return 0;
 }
 
-void set_transient_for(unsigned int x_main_win, unsigned int x_active_win)
+void set_transient_for(Ecore_Wl_Window *wl_main_win, Ecore_Wl_Window *wl_active_win)
 {
 }
 
-void unset_transient_for(unsigned int x_main_win)
+void unset_transient_for(Ecore_Wl_Window *wl_main_win)
 {
 }
 
@@ -1032,10 +1047,10 @@ void unset_transient_for(unsigned int x_main_win)
 //{
 //}
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 void setting_win(const char *wl_disp, Ecore_Wl_Window *wl_main_win)
 {
-	CALLED();
+	FN_CALL();
 	set_focus_for_app_window(wl_main_win, EINA_FALSE);
 	ecore_wl_flush();
 }
@@ -1043,11 +1058,10 @@ void setting_win(const char *wl_disp, Ecore_Wl_Window *wl_main_win)
 
 Evas_Object *create_win(ClipdrawerData *cd, const char *name)
 {
-	CALLED();
+	FN_CALL();
 
 	Evas_Object *win = elm_win_add(NULL, name, ELM_WIN_UTILITY);
-	if (!win)
-	{
+	if (!win) {
 		ERR("elm_win_add return NULL");
 		return NULL;
 	}
@@ -1056,7 +1070,7 @@ Evas_Object *create_win(ClipdrawerData *cd, const char *name)
 #ifdef HAVE_X11
 	ecore_x_window_size_get(ecore_x_window_root_first_get(), &cd->root_w, &cd->root_h);
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 	ecore_wl_screen_size_get(&cd->root_w, &cd->root_h);
 #endif
 	DBG("root_w: %d, root_h: %d", cd->root_w, cd->root_h);
@@ -1068,26 +1082,30 @@ Evas_Object *create_win(ClipdrawerData *cd, const char *name)
 
 static void set_sliding_win_geometry(AppData *ad)
 {
-	CALLED();
+	FN_CALL();
 	ClipdrawerData *cd = ad->clipdrawer;
 	Evas_Coord x, y, w, h;
 	int angle = elm_win_rotation_get(cd->main_win);
 
-	if (!ad->x_active_win)
-	{
+#ifdef HAVE_X11
+	if (!ad->x_active_win) {
 		ERR("x_active_win is NULL");
 		return;
 	}
+#endif
+#ifdef HAVE_WAYLAND
+	if (!ad->wl_active_win) {
+		ERR("wl_active_win is NULL");
+		return;
+	}
+#endif
 
-	if (angle == 90 || angle == 270)
-	{
+	if (angle == 90 || angle == 270) {
 		h = cd->landscape_height;
 		x = 0;
 		y = cd->root_w - h;
 		w = cd->root_h;
-	}
-	else
-	{
+	} else {
 		h = cd->height;
 		x = 0;
 		y = cd->root_h - h;
@@ -1102,14 +1120,14 @@ static void set_sliding_win_geometry(AppData *ad)
 #ifdef HAVE_X11
 	ecore_x_e_illume_clipboard_geometry_set(ad->x_active_win, x, y, w, h);
 #endif
-#ifdef HAVE_WL
-	ecore_wl_window_clipboard_geometry_get(ad->wl_active_win, x, y, w, h);
+#ifdef HAVE_WAYLAND
+	ecore_wl_window_clipboard_geometry_set(ad->wl_active_win, x, y, w, h);
 #endif
 }
 
 void set_rotation_to_clipdrawer(AppData *ad)
 {
-	CALLED();
+	FN_CALL();
 	ClipdrawerData *cd = ad->clipdrawer;
 	int angle = elm_win_rotation_get(cd->main_win);
 	int x, y, w, h;
@@ -1220,7 +1238,7 @@ static Eina_Bool _do_anim_delta_pos(ClipdrawerData *cd, int sp, int ep, int ac, 
 
 static void stop_animation(AppData *ad)
 {
-	CALLED();
+	FN_CALL();
 	ClipdrawerData *cd = ad->clipdrawer;
 	cd->anim_status = STATUS_NONE;
 	if (cd->anim_timer)
@@ -1281,7 +1299,7 @@ static Eina_Bool anim_pos_calc_cb(void *data)
 
 static Eina_Bool clipdrawer_anim_effect(AppData *ad, AnimStatus atype)
 {
-	CALLED();
+	FN_CALL();
 	ClipdrawerData *cd = ad->clipdrawer;
 	if (atype == cd->anim_status)
 	{
@@ -1321,17 +1339,18 @@ void rotate_cb(void *data, Evas_Object * obj, void *event)
 
 void clipdrawer_activate_view(AppData* ad)
 {
-	CALLED();
+	FN_CALL();
 	ClipdrawerData                *cd = ad->clipdrawer;
 #ifdef HAVE_X11
 	Ecore_X_Window                 x_transient_win = ad->x_active_win;
 	Ecore_X_Window                 x_isf_ise_win = 0;
 	Ecore_X_Virtual_Keyboard_State isf_ise_state;
-#else
-	unsigned int                 x_transient_win = ad->x_active_win;
-	unsigned int                 x_isf_ise_win = 0;
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
+/* FIXME : error: storage size of 'wl_transient_win' isn't known */
+//	Ecore_Wl_Window                 wl_transient_win = ad->wl_active_win;
+#endif
+#ifdef HAVE_WAYLAND
 	Ecore_Wl_Window                 *wl_isf_ise_win;
 	Ecore_Wl_Virtual_Keyboard_State isf_ise_state;
 #endif
@@ -1358,8 +1377,9 @@ void clipdrawer_activate_view(AppData* ad)
 				ecore_x_e_illume_clipboard_state_set(x_transient_win, ECORE_X_ILLUME_CLIPBOARD_STATE_ON);
 			}
 		}
+		set_transient_for(cd->x_main_win, x_transient_win);
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 		isf_ise_state = ecore_wl_window_keyboard_state_get(ad->wl_active_win);
 		if (isf_ise_state == ECORE_WL_VIRTUAL_KEYBOARD_STATE_ON)
 		{
@@ -1369,8 +1389,10 @@ void clipdrawer_activate_view(AppData* ad)
 				ecore_wl_window_clipboard_state_set(wl_isf_ise_win, EINA_TRUE);
 			}
 		}
+		/* FIXME : error: storage size of 'wl_transient_win' isn't known */
+//		set_transient_for(cd->wl_main_win, wl_transient_win);
 #endif
-		set_transient_for(cd->x_main_win, x_transient_win);
+
 
 		elm_win_wm_rotation_available_rotations_set(cd->main_win, rotations, 4);
 		evas_object_smart_callback_add(cd->main_win, "wm,rotation,changed", rotate_cb, ad);
@@ -1383,7 +1405,7 @@ void clipdrawer_activate_view(AppData* ad)
 		utilx_grab_key(ad->x_disp, cd->x_main_win, "XF86Back", TOP_POSITION_GRAB);
 		utilx_grab_key(ad->x_disp, cd->x_main_win, "XF86Home", SHARED_GRAB);
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 		ecore_wl_window_clipboard_state_set(ad->wl_active_win, EINA_TRUE);
 		//TODO: review the parameters
 		ecore_wl_window_keygrab_set(ad->wl_active_win, "XF86BACK", 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_TOPMOST);
@@ -1408,7 +1430,7 @@ void clipdrawer_activate_view(AppData* ad)
 
 static Eina_Bool clipdrawer_lower_view_timer_cb(void *data)
 {
-	CALLED();
+	FN_CALL();
 	AppData *ad = (AppData *)data;
 	ClipdrawerData *cd = ad->clipdrawer;
 
@@ -1422,7 +1444,12 @@ static Eina_Bool clipdrawer_lower_view_timer_cb(void *data)
 		elm_gengrid_item_show(it, ELM_GENGRID_ITEM_SCROLLTO_NONE);
 		evas_object_hide(cd->main_win);
 		elm_win_lower(cd->main_win);
+#ifdef HAVE_X11
 		unset_transient_for(cd->x_main_win);
+#endif
+#ifdef HAVE_WAYLAND
+		unset_transient_for(cd->wl_main_win);
+#endif
 		_delete_mode_set(ad, EINA_FALSE);
 	}
 
@@ -1431,7 +1458,7 @@ static Eina_Bool clipdrawer_lower_view_timer_cb(void *data)
 
 void clipdrawer_lower_view(AppData* ad)
 {
-	CALLED();
+	FN_CALL();
 	ClipdrawerData *cd = ad->clipdrawer;
 #ifdef HAVE_X11
 	Ecore_X_Window                 x_isf_ise_win = 0;
@@ -1457,7 +1484,7 @@ void clipdrawer_lower_view(AppData* ad)
 		utilx_ungrab_key(ad->x_disp, cd->x_main_win, "XF86Back");
 		utilx_ungrab_key(ad->x_disp, cd->x_main_win, "XF86Home");
 #endif
-#ifdef HAVE_WL
+#ifdef HAVE_WAYLAND
 		ecore_wl_window_clipboard_state_set(ad->wl_active_win, EINA_FALSE);
 		ecore_wl_window_clipboard_geometry_set(ad->wl_active_win, 0, 0, 0, 0);
 		Ecore_Wl_Virtual_Keyboard_State isf_ise_state;

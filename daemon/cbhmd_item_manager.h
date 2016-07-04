@@ -15,12 +15,14 @@
  *
  */
 
-#ifndef _ITEM_MANAGER_H_
-#define _ITEM_MANAGER_H_
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM_MANAGER__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM_MANAGER__
 
-#include "cbhm.h"
 #include <vconf.h>
 #include <vconf-internal-keys.h>
+
+#include "cbhmd.h"
+#include "cbhmd_appdata.h"
 
 #define MULTI_(s) dgettext(PACKAGE, s)
 #define S_CLIPBOARD MULTI_("IDS_COM_BODY_CLIPBOARD")
@@ -74,5 +76,5 @@ void item_delete_by_index(AppData *ad, int index);
 void item_clear_all(AppData *ad);
 int item_count_get(AppData *ad, int atom_index);
 
-#endif /*_ITEM_MANAGER_H_*/
+#endif /*__CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM_MANAGER__*/
 

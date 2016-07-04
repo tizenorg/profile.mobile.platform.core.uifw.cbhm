@@ -15,19 +15,4 @@
  *
  */
 
-#ifndef _WLCNPHANDLER_H_
-#define _WLCNPHANDLER_H_
-
-#include <Ecore.h>
-#include <Ecore_Wayland.h>
-
-struct _WlHandlerData {
-	Ecore_Event_Handler *wl_send_handler;
-	Ecore_Event_Handler *wl_receive_handler;
-};
-
-#include "cbhm.h"
-
-WlHandlerData *init_wlhandler(AppData *data);
-
-#endif
+#include "cbhmd_clipdrawer_x.h"

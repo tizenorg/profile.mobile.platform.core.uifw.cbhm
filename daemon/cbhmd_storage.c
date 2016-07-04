@@ -15,9 +15,12 @@
  *
  */
 
+#include "cbhmd_storage.h"
+
 #include <Ecore_File.h>
 
-#include "storage.h"
+#include "cbhmd_utils.h"
+
 #define STORAGE_FILEPATH DATADIR"/.cbhm_data"
 #define STORAGE_KEY_INDEX_FORMAT "<index%02d>"
 #define STORAGE_KEY_ITEM_FORMAT "<item%02d%s>"
@@ -69,7 +72,7 @@ static int getMaxIndex(indexType *indexTable, int len)
 
 StorageData *init_storage(AppData *ad)
 {
-	CALLED();
+	FN_CALL();
 	StorageData *sd = CALLOC(1, sizeof(StorageData));
 	if (!sd) return EINA_FALSE;
 
@@ -153,7 +156,7 @@ StorageData *init_storage(AppData *ad)
 
 void depose_storage(StorageData *sd)
 {
-	CALLED();
+	FN_CALL();
 	//dump_items(sd);
 	if (sd->ef)
 		eet_close(sd->ef);
@@ -164,7 +167,7 @@ void depose_storage(StorageData *sd)
 /*
 static void dump_items(StorageData *sd)
 {
-	CALLED();
+	FN_CALL();
 	int i;
 	for (i = 0; i < ITEM_CNT_MAX; i++)
 	{
@@ -251,7 +254,7 @@ static Eina_Bool item_delete(Eet_File *ef, int index)
 
 static Eina_Bool storage_item_update(AppData *ad, CNP_ITEM *item)
 {
-	CALLED();
+	FN_CALL();
 	StorageData *sd = ad->storage;
 	CNP_ITEM *temp;
 	Eina_Bool ret = EINA_FALSE;
@@ -291,7 +294,7 @@ static Eina_Bool storage_item_update(AppData *ad, CNP_ITEM *item)
 
 static Eina_Bool storage_item_write(AppData *ad, CNP_ITEM *item)
 {
-	CALLED();
+	FN_CALL();
 	StorageData *sd = ad->storage;
 	CNP_ITEM *temp;
 	Eina_Bool ret = EINA_TRUE;
@@ -329,7 +332,7 @@ static Eina_Bool storage_item_write(AppData *ad, CNP_ITEM *item)
 
 static Eina_Bool storage_item_delete(AppData *ad, CNP_ITEM *item)
 {
-	CALLED();
+	FN_CALL();
 	StorageData *sd = ad->storage;
 	Eina_Bool ret = EINA_FALSE;
 	int index;
@@ -432,7 +435,7 @@ static CNP_ITEM *storage_item_load(StorageData *sd, int index)
 
 static Eina_Bool storage_index_write(StorageData *sd, int index)
 {
-	CALLED();
+	FN_CALL();
 	Eina_Bool ret;
 	char datakey[20];
 	char write_data[50];

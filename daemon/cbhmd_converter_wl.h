@@ -15,23 +15,11 @@
  *
  */
 
-#ifndef _STORAGE_H_
-#define _STORAGE_H_
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
 
-#include <Eet.h>
-#include <Eina.h>
-#include <Ecore.h>
+#include "cbhmd_appdata.h"
 
-#include "cbhm.h"
-
-typedef double indexType; /* Ecore_Time */
-
-struct _StorageData {
-	Eet_File *ef;
-	indexType indexTable[ITEM_CNT_MAX];
-	CNP_ITEM *itemTable[ITEM_CNT_MAX];
-};
-
-StorageData *init_storage(AppData *ad);
-void depose_storage(StorageData *sd);
-#endif
+char* wl_string_for_entry_get(AppData *ad, int type_index, const char *str);
+char* wl_string_for_image_path_get(AppData *ad, int type_index, const char *str);
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__ */

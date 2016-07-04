@@ -15,15 +15,20 @@
  *
  */
 
-#include "converter.h"
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__
 
-char* string_for_entry_get(AppData *ad, int type_index, const char *str)
-{
-#ifdef HAVE_X11
-   return x_string_for_entry_get(ad, type_index, str);
-#else
-   return wl_string_for_entry_get(ad, type_index, str);
-#endif
+#include <Ecore.h>
+#include <Ecore_Wayland.h>
 
-   return NULL;
-}
+#include "cbhmd.h"
+#include "cbhmd_appdata.h"
+
+typedef struct _WlHandlerData {
+	Ecore_Event_Handler *wl_send_handler;
+	Ecore_Event_Handler *wl_receive_handler;
+} WlHandlerData;
+
+WlHandlerData *init_wlhandler(AppData *data);
+
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__ */

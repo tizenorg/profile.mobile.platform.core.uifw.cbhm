@@ -15,18 +15,8 @@
  *
  */
 
-#ifndef _X_ATOM_H_
-#define _X_ATOM_H_
-
-enum ATOM_INDEX {
-	ATOM_INDEX_TARGET = 0,
-	ATOM_INDEX_TEXT = 1,
-	ATOM_INDEX_HTML = 2,
-	ATOM_INDEX_EFL = 3,
-	ATOM_INDEX_IMAGE = 4,
-	ATOM_INDEX_POLARIS = 5,
-	ATOM_INDEX_MAX = 6
-};
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_X_H__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_X_H__
 
 typedef struct {
 	char emoticon_name[31 + 1];
@@ -57,7 +47,7 @@ typedef enum {
 	ENTRY_EMOTICON_MAX
 } ENTRY_EMOTICON_TYPE_E;
 
-#include "cbhm.h"
+#include "cbhmd.h"
 
 void init_target_atoms(AppData *ad);
 void depose_target_atoms(AppData *ad);
@@ -67,7 +57,7 @@ int atom_type_index_get(AppData *ad, Ecore_X_Atom atom);
 int atom_type_index_get(AppData *ad, int atom);
 #endif
 char* x_string_for_entry_get(AppData *ad, int type_index, const char *str);
-char *string_for_image_path_get(AppData *ad, int type_index, const char *str);
+char *x_string_for_image_path_get(AppData *ad, int type_index, const char *str);
 #ifdef HAVE_X11
 Eina_Bool generic_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, Ecore_X_Atom *ttype, int *tsize);
 #else
@@ -75,4 +65,4 @@ Eina_Bool generic_converter(AppData *ad, int reqAtom, CNP_ITEM *item, void **dat
 #endif
 char *entry_convert_emoticon_to_normal_text(const char *src_text);
 
-#endif
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_X_H__ */
