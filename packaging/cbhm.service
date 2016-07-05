@@ -1,0 +1,7 @@
+[Unit]
+Description=Clipboard History Manager
+
+[Service]
+Type=simple
+SmackProcessLabel=User
+ExecStart=/usr/apps/org.tizen.cbhm/bin/cbhm
