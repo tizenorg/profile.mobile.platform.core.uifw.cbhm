@@ -158,7 +158,7 @@ static int app_create(void *data)
 	elm_win_role_set(ad->clipdrawer->main_win, "cbhm");
 
 	//set env for root.
-	setenv("HOME", "/", 1);
+	//setenv("HOME", "/", 1);
 #ifdef HAVE_X11
 	if (!(ad->xhandler = init_xhandler(ad))) return EXIT_FAILURE;
 #endif
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
 	sd_notify(1, "READY=1");
 
 	//set env app for changeable UI.
-	setenv("HOME", "/opt/home/app" , 1);
+	setenv("HOME", "/usr/share/" , 1);
 
 	return appcore_efl_main(PACKAGE, &argc, &argv, &ops);
 }

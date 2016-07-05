@@ -7,8 +7,10 @@ Description=Clipboard History Manager
 User=owner
 Group=users
 Type=simple
+SmackProcessLabel=User
 ExecStart=/usr/apps/org.tizen.cbhm/bin/cbhm
-EnvironmentFile=/run/tizen-system-env
+#EnvironmentFile=/run/tizen-system-env  # only needed if system session
+#Environment=XDG_RUNTIME_DIR=/run  # only needed if system session
 
 [Install]
 WantedBy=multi-user.target
