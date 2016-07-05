@@ -1,0 +1,6 @@
+[Unit]
+Description=Start the "cbhm" program
+
+[Path]
+PathExists=/run/.wm_ready
+

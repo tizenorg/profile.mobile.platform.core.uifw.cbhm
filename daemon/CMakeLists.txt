@@ -105,5 +105,4 @@ ADD_DEPENDENCIES(${DAEMON} cbhmdrawer.edj)
 INSTALL(TARGETS ${DAEMON} DESTINATION ${PREFIX}/bin)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/data/themes/cbhmdrawer.edj DESTINATION ${DATADIR}/edje)
 ADD_SUBDIRECTORY(po)
-INSTALL(FILES ${CMAKE_SOURCE_DIR}/systemd/cbhm.service DESTINATION /usr/lib/systemd/user)
-INSTALL(FILES ${CMAKE_SOURCE_DIR}/systemd/cbhm.service DESTINATION /usr/lib/systemd/system)
+

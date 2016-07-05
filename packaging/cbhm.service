@@ -1,0 +1,6 @@
+[Unit]
+Description=Clipboard History Manager
+
+[Service]
+Type=simple
+ExecStart=/usr/apps/org.tizen.cbhm/bin/cbhm

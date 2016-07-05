@@ -54,7 +54,7 @@
 
 #endif /* CBHM_DAEMON */
 
-//#define CBHM_DEBUGGING
+#define CBHM_DEBUGGING
 
 #ifdef CBHM_DEBUGGING
 

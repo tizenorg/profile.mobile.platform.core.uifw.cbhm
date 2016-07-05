@@ -9,6 +9,9 @@ Group:      Applications
 License:    Apache-2.0
 URL:        http://www.samsung.com/
 Source0:    %{name}-%{version}.tar.gz
+Source1:    %{name}.service
+Source2:    %{name}.path
+
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(elementary)
 BuildRequires:  pkgconfig(appcore-efl)
@@ -82,10 +85,11 @@ export TARGET=2.3-mobile
 %make_install
 
 ## systemd
-mkdir -p %{buildroot}/usr/lib/systemd/user/core-efl.target.wants
-mkdir -p %{buildroot}%{_libdir}/systemd/system/multi-user.target.wants
-ln -s cbhm.service  %{buildroot}/usr/lib/systemd/user/core-efl.target.wants/cbhm.service
-ln -s cbhm.service %{buildroot}%{_libdir}/systemd/system/multi-user.target.wants/cbhm.service
+mkdir -p %{buildroot}%{_unitdir_user}/default.target.wants
+install -m 0644 %SOURCE1 %{buildroot}%{_unitdir_user}/%{name}.service
+install -m 0644 %SOURCE2 %{buildroot}%{_unitdir_user}/%{name}.path
+ln -s ../%{name}.service %{buildroot}%{_unitdir_user}/default.target.wants/%{name}.service
+ln -s ../%{name}.path %{buildroot}%{_unitdir_user}/default.target.wants/%{name}.path
 
 mkdir -p %{buildroot}/%{_datadir}/license
 cp %{_builddir}/%{buildsubdir}/LICENSE %{buildroot}/%{_datadir}/license/%{name}
@@ -102,9 +106,9 @@ chown -R 5000:5000  %{PREFIX}/share
 %{PREFIX}/share/edje/cbhmdrawer.edj
 %{PREFIX}/share/locale/*
 ## systemd
-%{_libdir}/systemd/user/cbhm.service
-%{_libdir}/systemd/user/core-efl.target.wants/cbhm.service
-%{_libdir}/systemd/system/cbhm.service
-%{_libdir}/systemd/system/multi-user.target.wants/cbhm.service
+%{_unitdir_user}/%{name}.service
+%{_unitdir_user}/default.target.wants/%{name}.service
+%{_unitdir_user}/%{name}.path
+%{_unitdir_user}/default.target.wants/%{name}.path
 %{_datadir}/license/%{name}
 %manifest %{name}.manifest
