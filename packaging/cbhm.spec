@@ -52,9 +52,10 @@ Description: cbhm application
 %endif
 export TARGET=2.3-mobile
 
-%define PREFIX /usr/apps/org.tizen.cbhm
+%define _pkg_dir %{TZ_SYS_RO_APP}/org.tizen.%{name}
+%define _pkg_shared_dir %{_pkg_dir}/shared
 
-rm -rf CMakeFiles CMackCache.txt && cmake . -DCMAKE_INSTALL_PREFIX=%{PREFIX}  \
+rm -rf CMakeFiles CMackCache.txt && cmake . -DCMAKE_INSTALL_PREFIX=%{_pkg_dir}  \
 %if %{with wayland}
 	-DWAYLAND_SUPPORT=On \
 %else
@@ -94,17 +95,16 @@ ln -s ../%{name}.path %{buildroot}%{_unitdir_user}/default.target.wants/%{name}.
 mkdir -p %{buildroot}/%{_datadir}/license
 cp %{_builddir}/%{buildsubdir}/LICENSE %{buildroot}/%{_datadir}/license/%{name}
 
-
 %post
 echo "INFO: System should be restarted or execute: systemctl --user daemon-reload from user session to finish service installation."
 
-chown -R 5000:5000  %{PREFIX}/share
 
 %files
 %defattr(-,root,root,-)
-%{PREFIX}/bin/*
-%{PREFIX}/share/edje/cbhmdrawer.edj
-%{PREFIX}/share/locale/*
+%{_pkg_dir}/bin/*
+%{_pkg_dir}/res/edje/cbhmdrawer.edj
+%{_pkg_dir}/res/locale/*
+#%{_pkg_shared_dir}/*
 ## systemd
 %{_unitdir_user}/%{name}.service
 %{_unitdir_user}/default.target.wants/%{name}.service

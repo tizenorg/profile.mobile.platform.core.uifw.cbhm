@@ -24,7 +24,7 @@
 #include "cbhmd_item_manager.h"
 #include "cbhmd_utils.h"
 
-#define EDJ_PATH DATADIR"/edje"
+#define EDJ_PATH RES_DIR"/edje"
 #define APP_EDJ_FILE EDJ_PATH"/cbhmdrawer.edj"
 #define GRP_MAIN "cbhmdrawer"
 
@@ -63,7 +63,7 @@ static void set_focus_for_app_window(Ecore_X_Window x_main_win, Eina_Bool enable
 #endif
 #ifdef HAVE_WAYLAND
 //static void setting_win(void *x_disp, unsigned int x_root_win, unsigned int x_main_win);
-static int isf_ise_window_get();
+static Ecore_Wl_Window* wl_isf_ise_window_get();
 static void set_transient_for(Ecore_Wl_Window *wl_main_win, Ecore_Wl_Window *wl_active_win);
 static void unset_transient_for(Ecore_Wl_Window *wl_main_win);
 static void set_focus_for_app_window(Ecore_Wl_Window *wl_main_win, Eina_Bool enable);
@@ -125,6 +125,7 @@ static void _change_gengrid_paste_textonly_mode(ClipdrawerData *cd)
 
 void clipdrawer_paste_textonly_set(AppData *ad, Eina_Bool textonly)
 {
+	FN_CALL();
 	ClipdrawerData *cd = ad->clipdrawer;
 	if (cd->paste_text_only != textonly)
 		cd->paste_text_only = textonly;
@@ -139,23 +140,23 @@ Eina_Bool clipdrawer_paste_textonly_get(AppData *ad)
 	return cd->paste_text_only;
 }
 
-static Evas_Object *_load_edj(Evas_Object* win, const char *file, const char *group)
+static Evas_Object *_load_edj(Evas_Object* win, const char *file,
+		const char *group)
 {
 	Evas_Object *layout = elm_layout_add(win);
-	if (!layout)
-	{
-		ERR("elm_layout_add return NULL");
+	if (!layout) {
+		ERR("elm_layout_add() Fail");
 		return NULL;
 	}
 
-	if (!elm_layout_file_set(layout, file, group))
-	{
-		ERR("elm_layout_file_set return FALSE");
+	if (!elm_layout_file_set(layout, file, group)) {
+		ERR("elm_layout_file_set() Fail(%s)", file);
 		evas_object_del(layout);
 		return NULL;
 	}
 
-	evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND,
+			EVAS_HINT_EXPAND);
 	elm_win_resize_object_add(win, layout);
 
 	evas_object_show(layout);
@@ -168,7 +169,6 @@ static void _gengrid_select_cb(void *data, Evas_Object *obj, void *event)
 	AppData *ad = item->ad;
 	ClipdrawerData *cd = ad->clipdrawer;
 
-	ERR("In");
 	elm_gengrid_item_selected_set(event, EINA_FALSE);
 	if (cd->delbtn_clicked)
 	{
@@ -185,7 +185,6 @@ static void _gengrid_select_cb(void *data, Evas_Object *obj, void *event)
 
 		if (item->type_index != ATOM_INDEX_IMAGE || !cd->paste_text_only)
 		{
-			ERR("In 1");
 			ad->clip_selected_item = item;
 #ifdef HAVE_X11
 			if (is_cbhm_selection_owner(ad, ECORE_X_SELECTION_SECONDARY))
@@ -337,22 +336,23 @@ _title_delete_all_btn_access_activate_cb(void *data,
 ClipdrawerData* init_clipdrawer(AppData *ad)
 {
 	FN_CALL();
-	ClipdrawerData *cd = calloc(1, sizeof(ClipdrawerData));
 	const char *data;
 	Evas_Object *part_obj, *access_obj;
 
+	ClipdrawerData *cd = calloc(1, sizeof(ClipdrawerData));
 	/* create and setting window */
-	if (!cd)
+	if (!cd) {
+		ERR("calloc() Fail");
 		return NULL;
+	}
 
-	if (!(cd->main_win = create_win(cd, APPNAME)))
-	{
+	if (!(cd->main_win = create_win(cd, APPNAME))) {
+		ERR("create_win() Fail");
 		free(cd);
 		return NULL;
 	}
 #ifdef HAVE_X11
-	if (!(cd->x_main_win = elm_win_xwindow_get(cd->main_win)))
-	{
+	if (!(cd->x_main_win = elm_win_xwindow_get(cd->main_win))) {
 		free(cd);
 		return NULL;
 	}
@@ -360,8 +360,8 @@ ClipdrawerData* init_clipdrawer(AppData *ad)
 	setting_win(ad->x_disp, ad->x_root_win, cd->x_main_win);
 #endif
 #ifdef HAVE_WAYLAND
-	if (!(cd->wl_main_win = elm_win_wl_window_get(cd->main_win)))
-	{
+	if (!(cd->wl_main_win = elm_win_wl_window_get(cd->main_win))) {
+		ERR("elm_win_wl_window_get() Fail");
 		free(cd);
 		return NULL;
 	}
@@ -372,6 +372,7 @@ ClipdrawerData* init_clipdrawer(AppData *ad)
 	/* edj setting */
 	if (!(cd->main_layout = _load_edj(cd->main_win, APP_EDJ_FILE, GRP_MAIN)))
 	{
+		ERR("_load_edj() Fail");
 		evas_object_del(cd->main_win);
 		free(cd);
 		return NULL;
@@ -1029,8 +1030,9 @@ void setting_win(Ecore_X_Display *x_disp, Ecore_X_Window x_root_win, Ecore_X_Win
 			ECORE_X_ATOM_WINDOW, 32, &x_main_win, 1);
 	ecore_x_flush();
 }
-#else
-static int isf_ise_window_get()
+#endif
+#ifdef HAVE_WAYLAND
+static Ecore_Wl_Window* wl_isf_ise_window_get()
 {
 	return 0;
 }
@@ -1043,14 +1045,8 @@ void unset_transient_for(Ecore_Wl_Window *wl_main_win)
 {
 }
 
-//void setting_win(void *x_disp, unsigned int x_root_win, unsigned int x_main_win)
-//{
-//}
-#endif
-#ifdef HAVE_WAYLAND
 void setting_win(const char *wl_disp, Ecore_Wl_Window *wl_main_win)
 {
-	FN_CALL();
 	set_focus_for_app_window(wl_main_win, EINA_FALSE);
 	ecore_wl_flush();
 }
@@ -1058,11 +1054,9 @@ void setting_win(const char *wl_disp, Ecore_Wl_Window *wl_main_win)
 
 Evas_Object *create_win(ClipdrawerData *cd, const char *name)
 {
-	FN_CALL();
-
 	Evas_Object *win = elm_win_add(NULL, name, ELM_WIN_UTILITY);
 	if (!win) {
-		ERR("elm_win_add return NULL");
+		ERR("elm_win_add() Fail");
 		return NULL;
 	}
 	elm_win_title_set(win, name);
@@ -1095,7 +1089,7 @@ static void set_sliding_win_geometry(AppData *ad)
 #endif
 #ifdef HAVE_WAYLAND
 	if (!ad->wl_active_win) {
-		ERR("wl_active_win is NULL");
+//		ERR("wl_active_win is NULL");
 		return;
 	}
 #endif
@@ -1383,7 +1377,7 @@ void clipdrawer_activate_view(AppData* ad)
 		isf_ise_state = ecore_wl_window_keyboard_state_get(ad->wl_active_win);
 		if (isf_ise_state == ECORE_WL_VIRTUAL_KEYBOARD_STATE_ON)
 		{
-			wl_isf_ise_win = isf_ise_window_get();
+			wl_isf_ise_win = wl_isf_ise_window_get();
 			if (wl_isf_ise_win)
 			{
 				ecore_wl_window_clipboard_state_set(wl_isf_ise_win, EINA_TRUE);
@@ -1400,6 +1394,8 @@ void clipdrawer_activate_view(AppData* ad)
 		set_rotation_to_clipdrawer(ad);
 		evas_object_show(cd->main_win);
 		elm_win_activate(cd->main_win);
+		INFO("clipboard window is shown");
+
 #ifdef HAVE_X11
 		ecore_x_e_illume_clipboard_state_set(ad->x_active_win, ECORE_X_ILLUME_CLIPBOARD_STATE_ON);
 		utilx_grab_key(ad->x_disp, cd->x_main_win, "XF86Back", TOP_POSITION_GRAB);
@@ -1443,6 +1439,7 @@ static Eina_Bool clipdrawer_lower_view_timer_cb(void *data)
 		Elm_Object_Item *it = elm_gengrid_first_item_get (cd->gengrid);
 		elm_gengrid_item_show(it, ELM_GENGRID_ITEM_SCROLLTO_NONE);
 		evas_object_hide(cd->main_win);
+		INFO("clipboard window is hidden");
 		elm_win_lower(cd->main_win);
 #ifdef HAVE_X11
 		unset_transient_for(cd->x_main_win);
@@ -1492,7 +1489,7 @@ void clipdrawer_lower_view(AppData* ad)
 		if (isf_ise_state == ECORE_WL_VIRTUAL_KEYBOARD_STATE_ON)
 		{
 			Ecore_Wl_Window *wl_isf_ise_win;
-			wl_isf_ise_win = isf_ise_window_get();
+			wl_isf_ise_win = wl_isf_ise_window_get();
 			ecore_wl_window_clipboard_state_set(wl_isf_ise_win, EINA_FALSE);
 		}
 		//TODO: review parameters
@@ -1508,7 +1505,10 @@ void clipdrawer_lower_view(AppData* ad)
 		}
 	}
 
-	cd->lower_view_timer = ecore_timer_add(TIME_DELAY_LOWER_VIEW, clipdrawer_lower_view_timer_cb, ad);
+	/* FIXME : This callback is sometimes not called. Does we need to call func
+	 * directly without using timer? */
+	cd->lower_view_timer = ecore_timer_add(TIME_DELAY_LOWER_VIEW,
+			clipdrawer_lower_view_timer_cb, ad);
 }
 
 void _delete_mode_set(AppData* ad, Eina_Bool del_mode)

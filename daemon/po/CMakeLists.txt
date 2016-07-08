@@ -80,7 +80,7 @@ FOREACH(pofile ${POFILES})
 	)
 
 	INSTALL(FILES ${moFile}
-			DESTINATION ${LOCALEDIR}/${lang}/LC_MESSAGES RENAME CBHM.mo)
+			DESTINATION ${LOCALE_DIR}/${lang}/LC_MESSAGES RENAME CBHM.mo)
 	SET(moFiles ${moFiles} ${moFile})
 ENDFOREACH(pofile)
 

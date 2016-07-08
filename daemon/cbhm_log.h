@@ -61,9 +61,9 @@
 #define FN_CALL() _INFO(">>>>>>>> called")
 #define FN_END() _INFO("<<<<<<<< ended")
 #define DBG(fmt, arg...) _DBG(fmt, ##arg)
-#define WARN(fmt, arg...) _WARN(CBHM_LOG_BROWN fmt CBHM_LOG_END, ##arg)
-#define ERR(fmt, arg...) _ERR(CBHM_LOG_RED fmt CBHM_LOG_END, ##arg)
-#define INFO(fmt, arg...) _INFO(CBHM_LOG_BLUE fmt CBHM_LOG_END, ##arg)
+#define WARN(fmt, arg...) _WARN(fmt  ##arg)
+#define ERR(fmt, arg...) _ERR(fmt, ##arg)
+#define INFO(fmt, arg...) _INFO(fmt, ##arg)
 #define SECURE_DBG(fmt, arg...) SECURE_SLOGD(fmt, ##arg)
 #define SECURE_ERR(fmt, arg...) SECURE_SLOGE(fmt, ##arg)
 
