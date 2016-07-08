@@ -1,8 +1,9 @@
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/data)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/res)
 
 SET(PREFIX "${CMAKE_INSTALL_PREFIX}")
-SET(DATADIR "${PREFIX}/share")
-SET(LOCALEDIR "${DATADIR}/locale")
+SET(RES_DIR "${PREFIX}/res")
+SET(LOCALE_DIR "${RES_DIR}/locale")
+SET(SHARED_DIR "${PREFIX}/shared")
 SET(VERSION 0.1.0)
 
 SET(DAEMON_SRCS cbhmd.c
@@ -86,8 +87,9 @@ SET(CMAKE_CXX_FLAGS_CCOV       "-O2 -std=c++0x -g --coverage -fPIE")
 
 SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -pie")
 
-ADD_DEFINITIONS("-DDATADIR=\"${DATADIR}\"")
-ADD_DEFINITIONS("-DLOCALEDIR=\"${LOCALEDIR}\"")
+ADD_DEFINITIONS("-DRES_DIR=\"${RES_DIR}\"")
+ADD_DEFINITIONS("-DLOCALE_DIR=\"${LOCALE_DIR}\"")
+ADD_DEFINITIONS("-DSHARED_DIR=\"${SHARED_DIR}\"")
 
 ADD_EXECUTABLE(${DAEMON} ${DAEMON_SRCS})
 #for XV extension screenshot
@@ -95,14 +97,14 @@ TARGET_LINK_LIBRARIES(${DAEMON} ${pkgs_LDFLAGS} ${pkgs_extra_LDFLAGS})
 
 ADD_CUSTOM_TARGET(cbhmdrawer.edj
 	   COMMAND edje_cc
-	   -id ${CMAKE_SOURCE_DIR}/data/images
-	   -sd ${CMAKE_SOURCE_DIR}/data/sounds
-	   ${CMAKE_SOURCE_DIR}/data/themes/cbhmdrawer.edc ${CMAKE_BINARY_DIR}/data/themes/cbhmdrawer.edj
-	   DEPENDS ${CMAKE_SOURCE_DIR}/data/themes/cbhmdrawer.edc
+	   -id ${CMAKE_SOURCE_DIR}/res/images
+	   -sd ${CMAKE_SOURCE_DIR}/res/sounds
+	   ${CMAKE_SOURCE_DIR}/res/edje/cbhmdrawer.edc ${CMAKE_BINARY_DIR}/res/edje/cbhmdrawer.edj
+	   DEPENDS ${CMAKE_SOURCE_DIR}/res/edje/cbhmdrawer.edc
 )
 ADD_DEPENDENCIES(${DAEMON} cbhmdrawer.edj)
-
+ 
 INSTALL(TARGETS ${DAEMON} DESTINATION ${PREFIX}/bin)
-INSTALL(FILES ${CMAKE_BINARY_DIR}/data/themes/cbhmdrawer.edj DESTINATION ${DATADIR}/edje)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/res/edje/cbhmdrawer.edj DESTINATION ${RES_DIR}/edje)
 ADD_SUBDIRECTORY(po)
 

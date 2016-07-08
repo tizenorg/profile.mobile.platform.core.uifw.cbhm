@@ -30,7 +30,7 @@
 #include "cbhm_log.h"
 
 #if !defined(PACKAGE)
-#define PACKAGE "CBHM"
+#define PACKAGE "cbhm"
 #endif
 
 #if !defined(APPNAME)
@@ -40,7 +40,7 @@
 #define CBHM_MAGIC 0xad960009
 
 #define ITEM_CNT_MAX 20
-#define COPIED_DATA_STORAGE_DIR DATADIR"/.cbhm_files"
+#define COPIED_DATA_STORAGE_DIR SHARED_DIR"/.cbhm_files"
 
 enum ATOM_INDEX {
 	ATOM_INDEX_TARGET = 0,

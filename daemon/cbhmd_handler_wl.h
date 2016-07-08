@@ -25,10 +25,12 @@
 #include "cbhmd_appdata.h"
 
 typedef struct _WlHandlerData {
+	Ecore_Event_Handler *wl_offer_handler;
 	Ecore_Event_Handler *wl_send_handler;
 	Ecore_Event_Handler *wl_receive_handler;
 } WlHandlerData;
 
 WlHandlerData *init_wlhandler(AppData *data);
+void depose_wlhandler(WlHandlerData *wld);
 
 #endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__ */

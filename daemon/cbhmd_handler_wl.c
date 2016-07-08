@@ -20,10 +20,32 @@
 #include "cbhmd_utils.h"
 
 static Eina_Bool _wl_selection_offer(void *data EINA_UNUSED,
-		int type EINA_UNUSED, void *event EINA_UNUSED)
+		int type EINA_UNUSED, void *event)
 {
 	FN_CALL();
 	Ecore_Wl_Input *input = NULL;
+	Ecore_Wl_Event_Dnd_Selection *ev = event;
+
+	if (!ev->mime_types[0] || !ev->mime_types[1]) {
+		WARN("mime type is empty");
+		return ECORE_CALLBACK_PASS_ON;
+	}
+
+	// for test
+	int i;
+	for (i = 0; i < 10; i++) {
+		if (ev->mime_types[i])
+			DBG("mime type(%s)", ev->mime_types[i]);
+	}
+	// for test
+
+	if (strcmp(ev->mime_types[0], "CLIPBOARD_BEGIN"))
+		return ECORE_CALLBACK_PASS_ON;
+
+	if (!strcmp(ev->mime_types[1], "CLIPBOARD_END")) {
+		ERR("no mime type for clipboard");
+		return ECORE_CALLBACK_PASS_ON;
+	}
 
 	input = ecore_wl_input_get();
 	if (!input)
@@ -32,7 +54,8 @@ static Eina_Bool _wl_selection_offer(void *data EINA_UNUSED,
 	if (!ecore_wl_dnd_selection_owner_has(input))
 		return ECORE_CALLBACK_PASS_ON;
 
-	ecore_wl_dnd_selection_get(input, "application/x-elementary-markup");
+	DBG("request to receive");
+	ecore_wl_dnd_selection_get(input, ev->mime_types[1]);
 
 	return ECORE_CALLBACK_PASS_ON;
 }
@@ -51,14 +74,14 @@ static Eina_Bool _wl_selection_send(void *udata, int type EINA_UNUSED,
 	if (!udata || !event)
 		return ECORE_CALLBACK_PASS_ON;
 
-	/* FIXME : Should handle various types of clipboard laster.
+	/* FIXME : Should handle various types of clipboard later.
 	 * For ex, primary, secondary, ... */
 	item = item_get_last(ad);
 
 	if (!item) {
 		/* FIXME : Do we need to reply to wayland? */
 		DBG("has no item");
-		return ECORE_CALLBACK_DONE;
+		return ECORE_CALLBACK_PASS_ON;
 	}
 
 	len_remained = item->len;
@@ -74,6 +97,8 @@ static Eina_Bool _wl_selection_send(void *udata, int type EINA_UNUSED,
 		ret = write(ev->fd, buf, len_remained);
 		if (ret == -1)
 			break;
+		DBG("sent data: %s, len: %d", buf, SAFE_STRLEN(buf));
+
 		buf += ret;
 		len_written += ret;
 		len_remained -= ret;
@@ -107,6 +132,7 @@ static Eina_Bool _wl_selection_receive(void *udata, int type EINA_UNUSED,
 	int i = -1;
 	types[++i] = "application/x-elementary-markup";
 	ecore_wl_dnd_selection_set(input, types);
+
 	return ECORE_CALLBACK_PASS_ON;
 }
 
@@ -118,7 +144,7 @@ WlHandlerData *init_wlhandler(AppData *ad)
 		return NULL;
 
 	/* to catch wl_data_device selection event */
-	wld->wl_receive_handler = ecore_event_handler_add(ECORE_WL_EVENT_DND_OFFER,
+	wld->wl_offer_handler = ecore_event_handler_add(ECORE_WL_EVENT_DND_OFFER,
 			_wl_selection_offer, ad);
 
 	/* to catch requests for sending data */
@@ -130,4 +156,12 @@ WlHandlerData *init_wlhandler(AppData *ad)
 			ECORE_WL_EVENT_SELECTION_DATA_READY, _wl_selection_receive, ad);
 
 	return wld;
+}
+
+void depose_wlhandler(WlHandlerData *wld)
+{
+	ecore_event_handler_del(wld->wl_offer_handler);
+	ecore_event_handler_del(wld->wl_send_handler);
+	ecore_event_handler_del(wld->wl_receive_handler);
+	FREE(wld);
 }
