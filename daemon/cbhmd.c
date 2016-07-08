@@ -31,6 +31,11 @@
 #include <X11/extensions/XIproto.h>
 #endif
 
+#define CBHM_DBUS_OBJPATH "/org/tizen/cbhm/dbus"
+#ifndef CBHM_DBUS_INTERFACE
+#define CBHM_DBUS_INTERFACE "org.tizen.cbhm.dbus"
+#endif /* CBHM_DBUS_INTERFACE */
+
 #include "cbhmd_utils.h"
 #include "cbhmd_appdata.h"
 #include "cbhmd_handler.h"
@@ -40,8 +45,100 @@
 #define ATOM_CLIPBOARD_MANAGER_NAME "CLIPBOARD_MANAGER"
 
 static AppData *g_main_ad = NULL;
+static Eldbus_Connection *cbhm_conn;
 
 int _log_domain = -1;
+
+#ifdef HAVE_WAYLAND
+enum {
+   CBHM_SIGNAL_HELLO = 0,
+};
+
+static Eldbus_Message* __cbhmd_show(const Eldbus_Service_Interface *iface,
+		const Eldbus_Message *msg)
+{
+	FN_CALL();
+	AppData *ad;
+	const char *show_type = NULL;
+
+	ad = eldbus_service_object_data_get(iface, CBHM_DBUS_OBJPATH);
+
+	if (!eldbus_message_arguments_get(msg, "s", &show_type)) {
+		ERR("Cannot get arguments");
+		return eldbus_message_error_new(msg,
+				"org.freedesktop.DBus.Error.Failed", "Cannot get arguments");
+	}
+
+	if (!show_type) {
+		ERR("Cannot get show type");
+		return eldbus_message_error_new(msg,
+				"org.freedesktop.DBus.Error.Failed", "Cannot get show type");
+	}
+
+	if (!strcmp("1", show_type))
+		clipdrawer_paste_textonly_set(ad, EINA_FALSE);
+	else
+		clipdrawer_paste_textonly_set(ad, EINA_TRUE);
+
+	clipdrawer_activate_view(ad);
+
+	return eldbus_message_method_return_new(msg);
+}
+
+static Eldbus_Message* __cbhmd_count(
+		const Eldbus_Service_Interface *iface EINA_UNUSED,
+		const Eldbus_Message *msg)
+{
+	FN_CALL();
+	AppData *ad;
+	int item_count = -1;
+	Eldbus_Message *reply;
+
+	ad = eldbus_service_object_data_get(iface, CBHM_DBUS_OBJPATH);
+
+   /* FIXME : should support get count for TEXT and ALL. That is,
+    * it needs some parameter */
+	item_count = item_count_get(ad, ATOM_INDEX_COUNT_ALL);
+	DBG("cbhm has %d items", item_count);
+	if (item_count == -1) {
+		ERR("Cannot get count");
+		return eldbus_message_error_new(msg,
+				"org.freedesktop.DBus.Error.Failed", "Cannot get count");
+	}
+
+	reply = eldbus_message_method_return_new(msg);
+	if (!reply) {
+		ERR("eldbus_message_method_return_new Failed");
+		return eldbus_message_error_new(msg,
+				"org.freedesktop.DBus.Error.Failed",
+				"eldbus_message_method_return_new Failed");
+	}
+
+	if (!eldbus_message_arguments_append(reply, "i", item_count)) {
+		eldbus_message_unref(reply);
+		ERR("eldbus_message_arguments_append Failed");
+		return eldbus_message_error_new(msg,
+				"org.freedesktop.DBus.Error.Failed",
+				"eldbus_message_arguments_append Failed");
+	}
+
+	return reply;
+}
+
+static const Eldbus_Method methods[] = {
+	{ "CbhmShow", ELDBUS_ARGS({"s", "string"}), ELDBUS_ARGS({NULL, NULL}),
+		__cbhmd_show
+	},
+	{ "CbhmGetCount", ELDBUS_ARGS({NULL, NULL}), ELDBUS_ARGS({"i", "int32"}),
+		__cbhmd_count
+	},
+	{ }
+};
+
+static const Eldbus_Service_Interface_Desc iface_desc = {
+		CBHM_DBUS_INTERFACE, methods, NULL
+};
+#endif /* HAVE_WAYLAND */
 
 static Eina_Bool setClipboardManager(AppData *ad)
 {
@@ -110,13 +207,53 @@ static void set_wl_window(Ecore_Wl_Window *wl_event_win)
 }
 #endif
 
+static void __cbhmd_on_name_request(void *data, const Eldbus_Message *msg,
+		Eldbus_Pending *pending EINA_UNUSED)
+{
+	FN_CALL();
+	unsigned int reply;
+
+	if (eldbus_message_error_get(msg, NULL, NULL)) {
+		printf("error on __cbhmd_on_name_request\n");
+		return;
+	}
+
+	if (!eldbus_message_arguments_get(msg, "u", &reply)) {
+		printf("error geting arguments on __cbhmd_on_name_request\n");
+		return;
+	}
+
+	if (reply != ELDBUS_NAME_REQUEST_REPLY_PRIMARY_OWNER) {
+		printf("error name already in use\n");
+		return;
+	}
+}
+
 static int app_create(void *data)
 {
 	FN_CALL();
-
 	AppData *ad = (AppData *)data;
+	Eldbus_Service_Interface *iface = NULL;
 
-	elm_app_base_scale_set(2.6);
+	elm_need_eldbus();
+
+	if (!(cbhm_conn = eldbus_connection_get(ELDBUS_CONNECTION_TYPE_SESSION))) {
+		ERR("Unable to connect to Session Bus");
+		return EXIT_FAILURE;
+	}
+
+	if (!(iface = eldbus_service_interface_register(cbhm_conn,
+			CBHM_DBUS_OBJPATH, &iface_desc))) {
+		ERR("Proxy interface registration failed");
+		return EXIT_FAILURE;
+	}
+
+	eldbus_service_object_data_set(iface, CBHM_DBUS_OBJPATH, ad);
+
+	eldbus_name_request(cbhm_conn, CBHM_DBUS_INTERFACE,
+			ELDBUS_NAME_REQUEST_FLAG_DO_NOT_QUEUE, __cbhmd_on_name_request, iface);
+
+	elm_app_base_scale_set(1.0);
 #ifdef HAVE_X11
 	ecore_x_init(ad->x_disp);
 #endif
@@ -174,7 +311,7 @@ static int app_create(void *data)
 #ifdef HAVE_X11
 	set_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD, NULL);
 #endif
-	clipdrawer_activate_view(ad);
+
 	return 0;
 }
 
@@ -187,6 +324,9 @@ static int app_terminate(void *data)
 #ifdef HAVE_X11
 	depose_xhandler(ad->xhandler);
 #endif
+#ifdef HAVE_WAYLAND
+	depose_wlhandler(ad->wlhandler);
+#endif
 	depose_storage(ad->storage);
 #ifdef HAVE_X11
 	depose_target_atoms(ad);
@@ -195,6 +335,10 @@ static int app_terminate(void *data)
 
 	eina_log_domain_unregister(_log_domain);
 	_log_domain = -1;
+
+	if (cbhm_conn)
+		eldbus_connection_unref(cbhm_conn);
+	eldbus_shutdown();
 
 	return 0;
 }

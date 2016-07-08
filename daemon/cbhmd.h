@@ -30,7 +30,7 @@
 #include "cbhm_log.h"
 
 #if !defined(PACKAGE)
-#define PACKAGE "CBHM"
+#define PACKAGE "cbhm"
 #endif
 
 #if !defined(APPNAME)

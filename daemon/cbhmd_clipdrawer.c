@@ -63,7 +63,7 @@ static void set_focus_for_app_window(Ecore_X_Window x_main_win, Eina_Bool enable
 #endif
 #ifdef HAVE_WAYLAND
 //static void setting_win(void *x_disp, unsigned int x_root_win, unsigned int x_main_win);
-static int isf_ise_window_get();
+static Ecore_Wl_Window* wl_isf_ise_window_get();
 static void set_transient_for(Ecore_Wl_Window *wl_main_win, Ecore_Wl_Window *wl_active_win);
 static void unset_transient_for(Ecore_Wl_Window *wl_main_win);
 static void set_focus_for_app_window(Ecore_Wl_Window *wl_main_win, Eina_Bool enable);
@@ -125,6 +125,7 @@ static void _change_gengrid_paste_textonly_mode(ClipdrawerData *cd)
 
 void clipdrawer_paste_textonly_set(AppData *ad, Eina_Bool textonly)
 {
+	FN_CALL();
 	ClipdrawerData *cd = ad->clipdrawer;
 	if (cd->paste_text_only != textonly)
 		cd->paste_text_only = textonly;
@@ -1029,8 +1030,9 @@ void setting_win(Ecore_X_Display *x_disp, Ecore_X_Window x_root_win, Ecore_X_Win
 			ECORE_X_ATOM_WINDOW, 32, &x_main_win, 1);
 	ecore_x_flush();
 }
-#else
-static int isf_ise_window_get()
+#endif
+#ifdef HAVE_WAYLAND
+static Ecore_Wl_Window* wl_isf_ise_window_get()
 {
 	return 0;
 }
@@ -1043,11 +1045,6 @@ void unset_transient_for(Ecore_Wl_Window *wl_main_win)
 {
 }
 
-//void setting_win(void *x_disp, unsigned int x_root_win, unsigned int x_main_win)
-//{
-//}
-#endif
-#ifdef HAVE_WAYLAND
 void setting_win(const char *wl_disp, Ecore_Wl_Window *wl_main_win)
 {
 	FN_CALL();
@@ -1383,7 +1380,7 @@ void clipdrawer_activate_view(AppData* ad)
 		isf_ise_state = ecore_wl_window_keyboard_state_get(ad->wl_active_win);
 		if (isf_ise_state == ECORE_WL_VIRTUAL_KEYBOARD_STATE_ON)
 		{
-			wl_isf_ise_win = isf_ise_window_get();
+			wl_isf_ise_win = wl_isf_ise_window_get();
 			if (wl_isf_ise_win)
 			{
 				ecore_wl_window_clipboard_state_set(wl_isf_ise_win, EINA_TRUE);
@@ -1492,7 +1489,7 @@ void clipdrawer_lower_view(AppData* ad)
 		if (isf_ise_state == ECORE_WL_VIRTUAL_KEYBOARD_STATE_ON)
 		{
 			Ecore_Wl_Window *wl_isf_ise_win;
-			wl_isf_ise_win = isf_ise_window_get();
+			wl_isf_ise_win = wl_isf_ise_window_get();
 			ecore_wl_window_clipboard_state_set(wl_isf_ise_win, EINA_FALSE);
 		}
 		//TODO: review parameters
