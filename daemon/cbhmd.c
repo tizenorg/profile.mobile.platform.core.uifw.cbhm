@@ -152,8 +152,26 @@ static const Eldbus_Method methods[] = {
 	{ }
 };
 
+enum
+{
+	ITEM_CLICKED_SIGNAL = 0
+};
+
+static const Eldbus_Signal signals[] = {
+	[ITEM_CLICKED_SIGNAL] = {"ItemClicked", ELDBUS_ARGS({ "s", "message" }), 0},
+	{ }
+};
+
+void
+send_item_clicked_signal(void *data)
+{
+	Eldbus_Service_Interface *iface = data;
+	eldbus_service_signal_emit(iface, ITEM_CLICKED_SIGNAL, "");
+}
+
+
 static const Eldbus_Service_Interface_Desc iface_desc = {
-		CBHM_DBUS_INTERFACE, methods, NULL
+		CBHM_DBUS_INTERFACE, methods, signals
 };
 #endif /* HAVE_WAYLAND */
 
@@ -270,6 +288,7 @@ static int app_create(void *data)
 		ERR("eldbus_service_interface_register() Fail");
 		return EXIT_FAILURE;
 	}
+	ad->iface = iface;
 
 	eldbus_service_object_data_set(iface, CBHM_DBUS_OBJPATH, ad);
 

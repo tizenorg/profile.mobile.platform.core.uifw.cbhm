@@ -65,6 +65,8 @@ struct _AppData {
 #endif
 #ifdef HAVE_WAYLAND
 	WlHandlerData *wlhandler;
+	Eldbus_Service_Interface *iface;
+	Eina_Bool send_item_clicked;
 #endif
 	StorageData *storage;
 

@@ -59,4 +59,5 @@ enum ATOM_INDEX_COUNT {
 	ATOM_INDEX_COUNT_MAX = 3
 };
 
+void send_item_clicked_signal(void *data);
 #endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON__ */

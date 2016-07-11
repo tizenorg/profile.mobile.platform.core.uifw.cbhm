@@ -76,7 +76,16 @@ static Eina_Bool _wl_selection_send(void *udata, int type EINA_UNUSED,
 
 	/* FIXME : Should handle various types of clipboard later.
 	 * For ex, primary, secondary, ... */
-	item = item_get_last(ad);
+	Eina_Bool send_item_clicked;
+	if (ad->send_item_clicked)
+	{
+		item = ad->clip_selected_item;
+		ad->send_item_clicked = EINA_FALSE;
+	}
+	else
+	{
+		item = item_get_last(ad);
+	}
 
 	if (!item) {
 		/* FIXME : Do we need to reply to wayland? */

@@ -192,6 +192,10 @@ static void _gengrid_select_cb(void *data, Evas_Object *obj, void *event)
 			else
 				set_selection_owner(ad, ECORE_X_SELECTION_SECONDARY, NULL);
 #endif
+#ifdef HAVE_WAYLAND
+			send_item_clicked_signal(ad->iface);
+			ad->send_item_clicked = EINA_TRUE;
+#endif
 		}
 	}
 }
@@ -1347,6 +1351,9 @@ void clipdrawer_activate_view(AppData* ad)
 #ifdef HAVE_WAYLAND
 	Ecore_Wl_Window                 *wl_isf_ise_win;
 	Ecore_Wl_Virtual_Keyboard_State isf_ise_state;
+	Ecore_Wl_Input *input = NULL;
+	const char *types[10] = {0, };
+	int i = -1;
 #endif
 	int rotations[4] = { 0, 90, 180, 270 };
 
@@ -1406,6 +1413,12 @@ void clipdrawer_activate_view(AppData* ad)
 		//TODO: review the parameters
 		ecore_wl_window_keygrab_set(ad->wl_active_win, "XF86BACK", 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_TOPMOST);
 		ecore_wl_window_keygrab_set(ad->wl_active_win, "XF86HOME", 0, 0, 0, ECORE_WL_WINDOW_KEYGRAB_TOPMOST);
+
+		input = ecore_wl_input_get();
+		//FIXME: types support should re-written
+		types[++i] = "application/x-elementary-markup";
+		ecore_wl_dnd_selection_set(input, types);
+
 #endif
 		ecore_timer_add(0.125, timer_cb, cd);  //0.125 is experimentally decided.
 	}
