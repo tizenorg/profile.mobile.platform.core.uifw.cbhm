@@ -29,6 +29,7 @@ BuildRequires:  pkgconfig(vconf-internal-keys)
 BuildRequires:  edje-tools
 BuildRequires:  pkgconfig(libsystemd-daemon)
 BuildRequires:  gettext
+BuildRequires:  pkgconfig(libtzplatform-config)
 BuildRequires:  pkgconfig(dlog)
 %{?systemd_requires}
 
@@ -39,19 +40,6 @@ Description: cbhm application
 %setup -q
 
 %build
-%if "%{?tizen_profile_name}" == "wearable"
-    export TARGET=2.3-wearable
-%else
- %if "%{?tizen_profile_name}" == "mobile"
-    export TARGET=2.3-mobile
- %else
-   %if "%{?tizen_profile_name}" == "tv"
-    export TARGET=2.3-mobile
-    %endif
- %endif
-%endif
-export TARGET=2.3-mobile
-
 %define _pkg_dir %{TZ_SYS_RO_APP}/org.tizen.%{name}
 %define _pkg_shared_dir %{_pkg_dir}/shared
 
@@ -70,19 +58,6 @@ rm -rf CMakeFiles CMackCache.txt && cmake . -DCMAKE_INSTALL_PREFIX=%{_pkg_dir}  
 make %{?jobs:-j%jobs}
 
 %install
-%if "%{?tizen_profile_name}" == "wearable"
-    export TARGET=2.3-wearable
-%else
- %if "%{?tizen_profile_name}" == "mobile"
-    export TARGET=2.3-mobile
- %else
-   %if "%{?tizen_profile_name}" == "tv"
-    export TARGET=2.3-mobile
-    %endif
- %endif
-%endif
-export TARGET=2.3-mobile
-
 %make_install
 
 ## systemd

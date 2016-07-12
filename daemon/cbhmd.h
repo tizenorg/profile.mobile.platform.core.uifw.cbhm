@@ -19,6 +19,7 @@
 #define __CLIPBOARD_HISTORY_MANAGER_DAEMON__
 
 #include <Elementary.h>
+#include <tzplatform_config.h>
 
 #ifdef HAVE_X11
 #include <Ecore_X.h>
@@ -40,7 +41,9 @@
 #define CBHM_MAGIC 0xad960009
 
 #define ITEM_CNT_MAX 20
-#define COPIED_DATA_STORAGE_DIR SHARED_DIR"/.cbhm_files"
+#define DATA_PATH tzplatform_getenv(TZ_USER_DATA)
+#define CBHM_DATA_PATH tzplatform_mkpath(TZ_USER_DATA, "cbhm")
+#define COPIED_DATA_STORAGE_DIR tzplatform_mkpath(TZ_USER_DATA, "cbhm/.cbhm_files")
 
 enum ATOM_INDEX {
 	ATOM_INDEX_TARGET = 0,

@@ -196,9 +196,11 @@ char* html_img_save_frm_local(char *copied_path)
 	image_name_get(html_img_name);
 	DBG("copied file name = %s\n", html_img_name);
 
-	size_path = snprintf(NULL, 0, COPIED_DATA_STORAGE_DIR"/%s", html_img_name) + 1;
+	size_path = snprintf(NULL, 0, "%s/%s", COPIED_DATA_STORAGE_DIR,
+			html_img_name) + 1;
 	copied_path = MALLOC(sizeof(char) * size_path);
-	snprintf(copied_path, size_path, COPIED_DATA_STORAGE_DIR"/%s", html_img_name);
+	snprintf(copied_path, size_path, "%s/%s", COPIED_DATA_STORAGE_DIR,
+			html_img_name);
 	DBG("copied path = %s\n", copied_path);
 	ecore_file_cp(html_img_url, copied_path);
 	FREE(html_img_url);
@@ -215,34 +217,39 @@ char* html_img_save(char *copied_path, CNP_ITEM *item)
 
 	is_network_enable = get_network_state();
 	DBG("network enable = %d\n", is_network_enable);
-	if (is_network_enable)
-	{
-		size_path = snprintf(NULL, 0, "http:/""%s", copied_path) + 1;
+	if (is_network_enable) {
+		size_path = snprintf(NULL, 0, "http:/" "%s", copied_path) + 1;
 		html_img_url = MALLOC(sizeof(char) * size_path);
-		snprintf(html_img_url, size_path, "http:/""%s", copied_path);
+		snprintf(html_img_url, size_path, "http:/" "%s", copied_path);
 		DBG("html_img_url = %s\n", html_img_url);
 
 		image_name_get(html_img_name);
 		DBG("copied file name = %s\n", html_img_name);
 
-		size_path = snprintf(NULL, 0, COPIED_DATA_STORAGE_DIR"/%s", html_img_name) + 1;
+		size_path = snprintf(NULL, 0, "%s/%s", COPIED_DATA_STORAGE_DIR,
+				html_img_name) + 1;
 		copied_path = MALLOC(sizeof(char) * size_path);
-		snprintf(copied_path, size_path, COPIED_DATA_STORAGE_DIR"/%s", html_img_name);
+		snprintf(copied_path, size_path, "%s/%s", COPIED_DATA_STORAGE_DIR,
+				html_img_name);
 		DBG("copied path = %s\n", copied_path);
-		ret = ecore_file_download_full(html_img_url, copied_path, downloaded_cb, NULL, item, NULL, NULL);
-		if(ret)
+		ret = ecore_file_download_full(html_img_url, copied_path, downloaded_cb,
+				NULL, item, NULL, NULL);
+		if (ret)
 			DBG("Download start");
 
 		FREE(html_img_url);
 		return copied_path;
 	}
+
 	return NULL;
 }
 
 #ifdef HAVE_X11
-CNP_ITEM *item_add_by_data(AppData *ad, Ecore_X_Atom type, void *data, int len, Eina_Bool show_msg)
+CNP_ITEM *item_add_by_data(AppData *ad, Ecore_X_Atom type, void *data, int len,
+		Eina_Bool show_msg)
 #else
-CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool show_msg)
+CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len,
+		Eina_Bool show_msg)
 #endif
 {
 	char *entry_text = NULL;
@@ -251,8 +258,7 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool
 	const char *file_name = NULL;
 	int size_path = 0;
 
-	if (!ad || !data)
-	{
+	if (!ad || !data) {
 		ERR("WRONG PARAMETER in %s", __func__);
 		return NULL;
 	}
@@ -271,8 +277,7 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool
 
 	if (item->type_index == ATOM_INDEX_TEXT)
 		item->gitem_style = GRID_ITEM_STYLE_TEXT;
-	else if (item->type_index == ATOM_INDEX_HTML)
-	{
+	else if (item->type_index == ATOM_INDEX_HTML) {
 		copied_path = string_for_image_path_get(ad, ATOM_INDEX_HTML, data);
 		DBG("found img path in html tags = %s\n", copied_path);
 
@@ -283,23 +288,20 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool
 
 		entry_text = string_for_entry_get(ad, ATOM_INDEX_HTML, data);
 		DBG("entry_text = %s\n copied_path = %s\n", entry_text, copied_path);
-	}
-	else if (item->type_index == ATOM_INDEX_EFL)
-	{
+	} else if (item->type_index == ATOM_INDEX_EFL) {
 		entry_text = string_for_entry_get(ad, ATOM_INDEX_EFL, data);
 		copied_path = string_for_image_path_get(ad, ATOM_INDEX_EFL, data);
 		if (copied_path)
 			item->img_from_markup = EINA_TRUE;
-	}
-	else if (item->type_index == ATOM_INDEX_IMAGE)
-	{
+	} else if (item->type_index == ATOM_INDEX_IMAGE) {
 		orig_path = data;
 		file_name = ecore_file_file_get(orig_path);
-		size_path = snprintf(NULL, 0, COPIED_DATA_STORAGE_DIR"/%s", file_name) + 1;
+		size_path = snprintf(NULL, 0, "%s/%s", COPIED_DATA_STORAGE_DIR,
+				file_name) + 1;
 		copied_path = MALLOC(sizeof(char) * size_path);
-		if (copied_path)
-		{
-			snprintf(copied_path, size_path, COPIED_DATA_STORAGE_DIR"/%s", file_name);
+		if (copied_path) {
+			snprintf(copied_path, size_path, "%s/%s", COPIED_DATA_STORAGE_DIR,
+					file_name);
 			data = copied_path;
 			len = SAFE_STRLEN(copied_path) + 1;
 		}
@@ -309,23 +311,18 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool
 			snprintf(copied_path, len, "%s", (char *)data);
 	}
 
-	if (copied_path)
-	{
+	if (copied_path) {
 		item->file = copied_path;
 		item->file_len = SAFE_STRLEN(copied_path) + 1;
 	}
 
-	if (entry_text && copied_path)
-	{
+	if (entry_text && copied_path) {
 		item->gitem_style = GRID_ITEM_STYLE_COMBINED;
 		FREE(entry_text);
-	}
-	else if (entry_text)
-	{
+	} else if (entry_text) {
 		item->gitem_style = GRID_ITEM_STYLE_TEXT;
 		FREE(entry_text);
-	}
-	else if (copied_path)
+	} else if (copied_path)
 		item->gitem_style = GRID_ITEM_STYLE_IMAGE;
 
 	item->data = data;
@@ -333,8 +330,7 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool
 
 	item = item_add_by_CNP_ITEM(ad, item, EINA_TRUE, show_msg);
 
-	if ((item->type_index == ATOM_INDEX_IMAGE) && orig_path && copied_path)
-	{
+	if ((item->type_index == ATOM_INDEX_IMAGE) && orig_path && copied_path) {
 		if (!ecore_file_cp(orig_path, copied_path))
 			DBG("ecore_file_cp fail!");
 		FREE(orig_path);

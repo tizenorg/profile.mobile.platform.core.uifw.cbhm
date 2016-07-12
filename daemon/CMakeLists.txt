@@ -57,6 +57,7 @@ pkg_check_modules(pkgs REQUIRED
 	vconf
 	vconf-internal-keys
 	libsystemd-daemon
+	libtzplatform-config
 	dlog
 	${MDM_REQUIED_PKGS}
 )

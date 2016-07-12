@@ -15,13 +15,14 @@
  *
  */
 
+#include "cbhmd.h"
 #include "cbhmd_storage.h"
 
 #include <Ecore_File.h>
 
 #include "cbhmd_utils.h"
 
-#define STORAGE_FILEPATH SHARED_DIR"/.cbhm_data"
+#define STORAGE_FILEPATH tzplatform_mkpath(TZ_USER_DATA, "cbhm/.cbhm_data")
 #define STORAGE_KEY_INDEX_FORMAT "<index%02d>"
 #define STORAGE_KEY_ITEM_FORMAT "<item%02d%s>"
 #define STORAGE_INDEX_ITEM_NONE 0.0

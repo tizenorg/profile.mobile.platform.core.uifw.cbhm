@@ -177,13 +177,13 @@ static const Eldbus_Service_Interface_Desc iface_desc = {
 
 static Eina_Bool setClipboardManager(AppData *ad)
 {
+	FN_CALL();
 	if (!ad) return EINA_FALSE;
 
+	/* PATH in tizen 3.0 beta : /opt/home/owner/data/cbhm/.cbhm_files */
 	if (!ecore_file_exists(COPIED_DATA_STORAGE_DIR)) {
 		if(!ecore_file_mkpath(COPIED_DATA_STORAGE_DIR))
 			ERR("ecore_file_mkpath() fail");
-	} else {
-		ERR("Already exist !!!!");
 	}
 
 #ifdef HAVE_X11
@@ -276,12 +276,11 @@ static int app_create(void *data)
 	Eldbus_Service_Interface *iface = NULL;
 
 	/* init connectivity */
-	elm_need_eldbus();
-
-	if (!(cbhm_conn = eldbus_connection_get(ELDBUS_CONNECTION_TYPE_SESSION))) {
-		ERR("eldbus_connection_get() Fail");
-		return EXIT_FAILURE;
-	}
+	if (elm_need_eldbus()) {
+		if (!(cbhm_conn = eldbus_connection_get(ELDBUS_CONNECTION_TYPE_SESSION))) {
+			ERR("eldbus_connection_get() Fail");
+			return EXIT_FAILURE;
+		}
 
 	if (!(iface = eldbus_service_interface_register(cbhm_conn,
 			CBHM_DBUS_OBJPATH, &iface_desc))) {
@@ -290,10 +289,13 @@ static int app_create(void *data)
 	}
 	ad->iface = iface;
 
-	eldbus_service_object_data_set(iface, CBHM_DBUS_OBJPATH, ad);
+		eldbus_service_object_data_set(iface, CBHM_DBUS_OBJPATH, ad);
 
-	eldbus_name_request(cbhm_conn, CBHM_DBUS_INTERFACE,
-			ELDBUS_NAME_REQUEST_FLAG_DO_NOT_QUEUE, __cbhmd_on_name_request, iface);
+		eldbus_name_request(cbhm_conn, CBHM_DBUS_INTERFACE,
+		ELDBUS_NAME_REQUEST_FLAG_DO_NOT_QUEUE, __cbhmd_on_name_request, iface);
+	} else {
+		ERR("elm_need_eldbus() Fail");
+	}
 
 	/* init UI */
 	elm_app_base_scale_set(2.6);
