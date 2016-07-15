@@ -18,4 +18,21 @@
 #ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_X_H__
 #define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_X_H__
 
+#include <Ecore_X.h>
+
+#include "cbhmd_appdata.h"
+
+void cbhmd_x_drawer_focus_set(Ecore_X_Window x_main_win, Eina_Bool enable);
+int cbhmd_x_drawer_effect_and_focus_set(Cbhmd_App_Data *ad);
+
+void cbhmd_x_drawer_set_transient(Ecore_X_Window transient_win,
+                                  Ecore_X_Window toplevel_win);
+void cbhmd_x_drawer_unset_transient(Ecore_X_Window x_main_win);
+
+void cbhmd_x_drawer_event_window_set_title(Ecore_X_Window x_event_win,
+                                           Ecore_X_Window x_root_win);
+int cbhmd_x_drawer_event_window_create(Cbhmd_App_Data *ad);
+
+Ecore_X_Window cbhmd_x_drawer_isf_ise_window_get();
+
 #endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_X_H__ */

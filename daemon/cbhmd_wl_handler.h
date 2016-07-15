@@ -15,17 +15,23 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__
 
-#ifdef HAVE_X11
-#include "cbhmd_converter_x.h"
-#endif
-#ifdef HAVE_WAYLAND
-#include "cbhmd_converter_wl.h"
-#endif
+#include <Ecore.h>
+#include <Ecore_Wayland.h>
 
-char* string_for_entry_get(AppData *ad, int type_index, const char *str);
-char* string_for_image_path_get(AppData *ad, int type_index, const char *str);
+#include "cbhmd.h"
+#include "cbhmd_appdata.h"
 
-#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__ */
+typedef struct _Cbhmd_Wl_Handler_Data
+{
+   Ecore_Event_Handler *wl_offer_handler;
+   Ecore_Event_Handler *wl_send_handler;
+   Ecore_Event_Handler *wl_receive_handler;
+} Cbhmd_Wl_Handler_Data;
+
+int cbhmd_wl_handler_init(Cbhmd_App_Data *data);
+void cbhmd_wl_handler_deinit(Cbhmd_Wl_Handler_Data *wld);
+
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__ */

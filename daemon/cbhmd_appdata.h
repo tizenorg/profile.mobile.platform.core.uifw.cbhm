@@ -18,60 +18,60 @@
 #ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_APPDATA_H__
 #define __CLIPBOARD_HISTORY_MANAGER_DAEMON_APPDATA_H__
 
-typedef struct _AppData AppData;
-typedef struct _TargetHandler TargetHandler;
-typedef struct _ClipdrawerData ClipdrawerData;
-typedef struct _CNP_ITEM CNP_ITEM;
+typedef struct _Cbhmd_App_Data Cbhmd_App_Data;
+typedef struct _Cbhmd_Handler_Target Cbhmd_Handler_Target;
+typedef struct _Cbhmd_Drawer_Data Cbhmd_Drawer_Data;
+typedef struct _Cbhmd_Cnp_Item Cbhmd_Cnp_Item;
+typedef struct _Cbhmd_Storage_Data Cbhmd_Storage_Data;
 #ifdef HAVE_X11
-typedef struct _XHandlerData XHandlerData;
+typedef struct _Cbhmd_X_Handler_Data Cbhmd_X_Handler_Data;
 #endif
 #ifdef HAVE_WAYLAND
-typedef struct _WlHandlerData WlHandlerData;
+typedef struct _Cbhmd_Wl_Handler_Data Cbhmd_Wl_Handler_Data;
 #endif
-typedef struct _StorageData StorageData;
 
 #include "cbhmd.h"
 #include "cbhmd_storage.h"
 #include "cbhmd_handler.h"
-#include "cbhmd_converter.h"
-#include "cbhmd_clipdrawer.h"
+#include "cbhmd_convert.h"
+#include "cbhmd_drawer.h"
 #include "cbhmd_item_manager.h"
 
-struct _AppData {
-	int magic;
+struct _Cbhmd_App_Data
+{
+   int magic;
 #ifdef HAVE_X11
-	Ecore_X_Display *x_disp;
-	Ecore_X_Window x_root_win;
-	Ecore_X_Window x_event_win;
-	Ecore_X_Window x_active_win;
+   Ecore_X_Display *x_disp;
+   Ecore_X_Window x_root_win;
+   Ecore_X_Window x_event_win;
+   Ecore_X_Window x_active_win;
 #endif
 #ifdef HAVE_WAYLAND
-	const char *wl_disp;
-	Ecore_Wl_Window *wl_root_win;
-	Ecore_Wl_Window *wl_event_win;
-	Ecore_Wl_Window *wl_active_win;
+   const char *wl_disp;
+   Ecore_Wl_Window *wl_event_win;
+   Ecore_Wl_Window *wl_active_win;
 #endif
-	Eina_List *item_list;
+   Eina_List *item_list;
 
-	Eina_Bool (*draw_item_add)(AppData *ad, CNP_ITEM *item);
-	Eina_Bool (*draw_item_del)(AppData *ad, CNP_ITEM *item);
-	Eina_Bool (*storage_item_add)(AppData *ad, CNP_ITEM *item);
-	Eina_Bool (*storage_item_del)(AppData *ad, CNP_ITEM *item);
-	Eina_Bool (*storage_item_update)(AppData *ad, CNP_ITEM *item);
-	CNP_ITEM *(*storage_item_load)(StorageData *sd, int index);
-	ClipdrawerData *clipdrawer;
+   Eina_Bool (*draw_item_add)(Cbhmd_App_Data *ad, Cbhmd_Cnp_Item *item);
+   Eina_Bool (*draw_item_del)(Cbhmd_App_Data *ad, Cbhmd_Cnp_Item *item);
+   Eina_Bool (*storage_item_add)(Cbhmd_App_Data *ad, Cbhmd_Cnp_Item *item);
+   Eina_Bool (*storage_item_del)(Cbhmd_App_Data *ad, Cbhmd_Cnp_Item *item);
+   Eina_Bool (*storage_item_update)(Cbhmd_App_Data *ad,
+                                    Cbhmd_Cnp_Item *item);
+   Cbhmd_Cnp_Item *(*storage_item_load)(Cbhmd_Storage_Data *sd, int index);
+   Cbhmd_Drawer_Data *drawer;
 #ifdef HAVE_X11
-	XHandlerData *xhandler;
+   Cbhmd_X_Handler_Data *xhandler;
 #endif
 #ifdef HAVE_WAYLAND
-	WlHandlerData *wlhandler;
-	Eldbus_Service_Interface *iface;
-	Eina_Bool send_item_clicked;
+   Cbhmd_Wl_Handler_Data *wlhandler;
+   Eldbus_Service_Interface *iface;
 #endif
-	StorageData *storage;
+   Cbhmd_Storage_Data *storage;
 
-	CNP_ITEM *clip_selected_item;
-	TargetHandler targetAtoms[ATOM_INDEX_MAX];
+   Cbhmd_Cnp_Item *selected_item;
+   Cbhmd_Handler_Target targetAtoms[ATOM_INDEX_MAX];
 };
 
 #endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_APPDATA_H__ */

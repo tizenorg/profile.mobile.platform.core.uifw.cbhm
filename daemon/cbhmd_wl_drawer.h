@@ -15,11 +15,21 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_X_H__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_X_H__
+
+#include <Ecore_Wayland.h>
 
 #include "cbhmd_appdata.h"
 
-char* wl_string_for_entry_get(AppData *ad, int type_index, const char *str);
-char* wl_string_for_image_path_get(AppData *ad, int type_index, const char *str);
-#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__ */
+void cbhmd_wl_drawer_focus_set(Ecore_Wl_Window *wl_main_win, Eina_Bool enable);
+int cbhmd_wl_drawer_effect_and_focus_set(Cbhmd_App_Data *ad);
+void cbhmd_wl_drawer_event_window_set_title(Ecore_Wl_Window *wl_event_win);
+
+void cbhmd_wl_drawer_set_transient(Ecore_Wl_Window *transient_win,
+      Ecore_Wl_Window *toplevel_win);
+void cbhmd_wl_drawer_unset_transient(Ecore_Wl_Window *wl_main_win);
+
+Ecore_Wl_Window* cbhmd_wl_drawer_isf_ise_window_get();
+
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_X_H__ */
