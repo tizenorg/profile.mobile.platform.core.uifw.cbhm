@@ -15,4 +15,22 @@
  *
  */
 
-#include "cbhmd_clipdrawer_x.h"
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__
+
+#include <Ecore.h>
+#include <Ecore_Wayland.h>
+
+#include "cbhmd.h"
+#include "cbhmd_appdata.h"
+
+typedef struct _cbhmd_wl_handler_data {
+	Ecore_Event_Handler *wl_offer_handler;
+	Ecore_Event_Handler *wl_send_handler;
+	Ecore_Event_Handler *wl_receive_handler;
+} cbhmd_wl_handler_data_s;
+
+int cbhmd_wl_handler_init(cbhmd_app_data_s *data);
+void cbhmd_wl_handler_deinit(cbhmd_wl_handler_data_s *wld);
+
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__ */

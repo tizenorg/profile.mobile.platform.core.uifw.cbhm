@@ -34,10 +34,14 @@
 #undef WARN
 #undef ERR
 
-#define TIZEN_DEBUG_ENABLE
 #define LOG_TAG "CBHM"
 #include <dlog.h>
 
+#ifdef TIZEN_DEBUG_ENABLE
+#define CBHM_DEBUGGING
+#endif /* TIZEN_DEBUG_ENABLE */
+
+/* Log coloring is not served in the mobile profile of tizen 3.0 beta. */
 #ifdef CBHM_DAEMON
 
 #define _DBG(fmt, arg...) SLOGD(CBHM_LOG_GREEN "<Daemon>" CBHM_LOG_END fmt, ##arg)
@@ -53,8 +57,6 @@
 #define _ERR(fmt, arg...) SLOGE(fmt, ##arg)
 
 #endif /* CBHM_DAEMON */
-
-#define CBHM_DEBUGGING
 
 #ifdef CBHM_DEBUGGING
 
@@ -79,5 +81,51 @@
 #define SECURE_ERR(fmt, arg...) SECURE_SLOGE(fmt, ##arg)
 
 #endif /* CBHM_DEBUGGING */
+
+#define RET_IF(expr) \
+	do { \
+		if (expr) { \
+			ERR("(%s)", #expr); \
+			return; \
+		} \
+	} while (0)
+
+#define RETV_IF(expr, val) \
+	do { \
+		if (expr) { \
+			ERR("(%s)", #expr); \
+			return (val); \
+		} \
+	} while (0)
+
+#define RETM_IF(expr, fmt, arg...) \
+	do { \
+		if (expr) { \
+			ERR(fmt, ##arg); \
+			return; \
+		} \
+	} while (0)
+
+#define RETVM_IF(expr, val, fmt, arg...) \
+	do { \
+		if (expr) { \
+			ERR(fmt, ##arg); \
+			return (val); \
+		} \
+	} while (0)
+
+#define ERR_IF(expr) \
+	do { \
+		if (expr) { \
+			ERR("(%s)", #expr); \
+		} \
+	} while (0)
+
+#define WARN_IF(expr, fmt, arg...) \
+	do { \
+		if (expr) { \
+			WARN(fmt, ##arg); \
+		} \
+	} while (0)
 
 #endif /* __CLIPBOARD_HISTORY_MANAGER_LOG_H__ */

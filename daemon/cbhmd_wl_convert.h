@@ -15,14 +15,9 @@
  *
  */
 
-#include "cbhmd_converter_wl.h"
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
 
-char* wl_string_for_entry_get(AppData *ad, int type_index, const char *str)
-{
-   return NULL;
-}
+#include "cbhmd_appdata.h"
 
-char* wl_string_for_image_path_get(AppData *ad, int type_index, const char *str)
-{
-	return NULL;
-}
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__ */

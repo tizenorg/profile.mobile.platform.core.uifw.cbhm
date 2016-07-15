@@ -21,19 +21,18 @@
 #endif
 
 #include "cbhmd_utils.h"
-#include "cbhmd_handler_x.h"
+#include "cbhmd_x_handler.h"
 
-#ifdef HAVE_X11
-Eina_Bool cbhm_send_event(AppData *ad, Ecore_X_Window xwin, char *msg)
+Eina_Bool cbhmd_x_handler_send_event(cbhmd_app_data_s *ad, Ecore_X_Window xwin, char *msg)
 {
-	ClipdrawerData *cd = ad->clipdrawer;
+	cbhmd_drawer_data_s *dd = ad->drawer;
 
 	Ecore_X_Atom x_atom_cbhm_msg = ecore_x_atom_get("CBHM_MSG");
 	XClientMessageEvent m;
 	memset(&m, 0, sizeof(m));
 	m.type = ClientMessage;
 	m.display = ecore_x_display_get();
-	m.window = cd->x_main_win;
+	m.window = dd->x_main_win;
 	m.message_type = x_atom_cbhm_msg;
 	m.format = 8;
 	snprintf(m.data.b, 20, "%s", msg);
@@ -45,7 +44,7 @@ Eina_Bool cbhm_send_event(AppData *ad, Ecore_X_Window xwin, char *msg)
 	return EINA_TRUE;
 }
 
-Ecore_X_Window get_selection_owner(AppData *ad, Ecore_X_Selection selection)
+Ecore_X_Window get_selection_owner(cbhmd_app_data_s *ad, Ecore_X_Selection selection)
 {
 	FN_CALL();
 	if (!ad) return 0;
@@ -64,7 +63,7 @@ Ecore_X_Window get_selection_owner(AppData *ad, Ecore_X_Selection selection)
 	return XGetSelectionOwner(ad->x_disp, sel);
 }
 
-Eina_Bool is_cbhm_selection_owner(AppData *ad, Ecore_X_Selection selection)
+Eina_Bool is_cbhm_selection_owner(cbhmd_app_data_s *ad, Ecore_X_Selection selection)
 {
 	FN_CALL();
 	if (!ad) return EINA_FALSE;
@@ -74,10 +73,8 @@ Eina_Bool is_cbhm_selection_owner(AppData *ad, Ecore_X_Selection selection)
 		return EINA_TRUE;
 	return EINA_FALSE;
 }
-#endif
 
-#ifdef HAVE_X11
-Eina_Bool set_selection_owner(AppData *ad, Ecore_X_Selection selection, CNP_ITEM *item)
+Eina_Bool set_selection_owner(cbhmd_app_data_s *ad, Ecore_X_Selection selection, cbhmd_cnp_item_s *item)
 {
 	FN_CALL();
 	if (!ad) return EINA_FALSE;
@@ -108,14 +105,12 @@ Eina_Bool set_selection_owner(AppData *ad, Ecore_X_Selection selection, CNP_ITEM
 	ERR("set selection failed");
 	return EINA_FALSE;
 }
-#endif
 
 static Eina_Bool selection_timer_cb(void *data)
 {
 	FN_CALL();
-	AppData *ad = data;
-#ifdef HAVE_X11
-	XHandlerData *xd = ad->xhandler;
+	cbhmd_app_data_s *ad = data;
+	cbhmd_x_handler_data_s *xd = ad->xhandler;
 
 	set_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD, NULL);
 	if (is_cbhm_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD))
@@ -124,7 +119,7 @@ static Eina_Bool selection_timer_cb(void *data)
 		xd->selection_timer = NULL;
 		return ECORE_CALLBACK_CANCEL;
 	}
-#endif
+
 	return ECORE_CALLBACK_RENEW;
 }
 
@@ -132,19 +127,19 @@ static Eina_Bool _xsel_clear_cb(void *data, int type, void *event)
 {
 	FN_CALL();
 	if (!data || !event) return EINA_TRUE;
-	AppData *ad = data;
-	ClipdrawerData *cd = ad->clipdrawer;
-#ifdef HAVE_X11
-	XHandlerData *xd = ad->xhandler;
+	cbhmd_app_data_s *ad = data;
+	cbhmd_drawer_data_s *dd = ad->drawer;
+
+	cbhmd_x_handler_data_s *xd = ad->xhandler;
 	Ecore_X_Event_Selection_Clear *ev = event;
 
 	DBG("in %s, ev->win: 0x%x\n", __func__, ev->win);
 
 	if (is_cbhm_selection_owner(ad, ev->selection)) return EINA_TRUE;
 
-	if (ev->selection == ECORE_X_SELECTION_SECONDARY && cd->item_clicked)
+	if (ev->selection == ECORE_X_SELECTION_SECONDARY && dd->item_clicked)
 	{
-		cd->item_clicked = EINA_FALSE;
+		dd->item_clicked = EINA_FALSE;
 		set_selection_owner(ad, ECORE_X_SELECTION_SECONDARY, NULL);
 	}
 
@@ -159,7 +154,6 @@ static Eina_Bool _xsel_clear_cb(void *data, int type, void *event)
 		xd->selection_timer = NULL;
 	}
 	xd->selection_timer = ecore_timer_add(SELECTION_CHECK_TIME, selection_timer_cb, ad);
-#endif
 
 	return ECORE_CALLBACK_DONE;
 }
@@ -172,8 +166,8 @@ static Eina_Bool _xsel_request_cb(void *data, int type, void *event)
 #else
 	if (!data || !event) return ECORE_CALLBACK_PASS_ON;
 #endif
-	AppData *ad = data;
-#ifdef HAVE_X11
+	cbhmd_app_data_s *ad = data;
+
 	Ecore_X_Event_Selection_Request *ev = event;
 
 	char *names[3];
@@ -186,11 +180,11 @@ static Eina_Bool _xsel_request_cb(void *data, int type, void *event)
 	FREE(names[1]);
 	FREE(names[2]);
 
-	CNP_ITEM *item = NULL;
+	cbhmd_cnp_item_s *item = NULL;
 	if (ev->selection == ECORE_X_ATOM_SELECTION_CLIPBOARD)
 		item = item_get_last(ad);
 	else if (ev->selection == ECORE_X_ATOM_SELECTION_SECONDARY)
-		item = ad->clip_selected_item;
+		item = ad->selected_item;
 	else
 		return ECORE_CALLBACK_PASS_ON;
 
@@ -244,12 +238,11 @@ static Eina_Bool _xsel_request_cb(void *data, int type, void *event)
 			CurrentTime);
 	DBG("change property notify");
 	ecore_x_flush();
-#endif
+
 	return ECORE_CALLBACK_DONE;
 }
 
-#ifdef HAVE_X11
-static void send_convert_selection_target(AppData *ad, Ecore_X_Selection_Data_Targets *targets_data)
+static void send_convert_selection_target(cbhmd_app_data_s *ad, Ecore_X_Selection_Data_Targets *targets_data)
 {
 	FN_CALL();
 	/*	struct _Ecore_X_Selection_Data_Targets {
@@ -297,9 +290,8 @@ static void send_convert_selection_target(AppData *ad, Ecore_X_Selection_Data_Ta
 	}
 	ERR("get target atom failed");
 }
-#endif
 
-static Eina_Bool _add_selection_imagepath(AppData* ad, char *str)
+static Eina_Bool _add_selection_imagepath(cbhmd_app_data_s* ad, char *str)
 {
 	if (!ad || !str)
 		return EINA_FALSE;
@@ -329,8 +321,7 @@ static Eina_Bool _add_selection_imagepath(AppData* ad, char *str)
 	return EINA_FALSE;
 }
 
-#ifdef HAVE_X11
-static void _get_selection_data_files(AppData* ad, Ecore_X_Selection_Data_Files *files_data)
+static void _get_selection_data_files(cbhmd_app_data_s* ad, Ecore_X_Selection_Data_Files *files_data)
 {
 /*	struct _Ecore_X_Selection_Data_Files {
 		Ecore_X_Selection_Data data;
@@ -344,7 +335,6 @@ static void _get_selection_data_files(AppData* ad, Ecore_X_Selection_Data_Files 
 		_add_selection_imagepath(ad, files_data->files[i]);
 	}
 }
-#endif
 
 static Eina_Bool _xsel_notify_cb(void *data, int type, void *event)
 {
@@ -352,9 +342,8 @@ static Eina_Bool _xsel_notify_cb(void *data, int type, void *event)
 	if (!data || !event)
 		return ECORE_CALLBACK_PASS_ON;
 
-	AppData *ad = data;
-#ifdef HAVE_X11
-	XHandlerData *xd = ad->xhandler;
+	cbhmd_app_data_s *ad = data;
+	cbhmd_x_handler_data_s *xd = ad->xhandler;
 	if (xd->selection_timer)
 	{
 		ecore_timer_del(xd->selection_timer);
@@ -455,7 +444,6 @@ set_clipboard_selection_owner:
 	set_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD, NULL);
 	if (!is_cbhm_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD))
 		xd->selection_timer = ecore_timer_add(SELECTION_CHECK_TIME, selection_timer_cb, ad);
-#endif
 
 	return ECORE_CALLBACK_DONE;
 }
@@ -465,9 +453,9 @@ static Eina_Bool _xclient_msg_cb(void *data, int type, void *event)
 	FN_CALL();
 	if (!data || !event) return ECORE_CALLBACK_PASS_ON;
 
-	AppData *ad = data;
+	cbhmd_app_data_s *ad = data;
 #ifdef HAVE_X11
-	XHandlerData *xd = ad->xhandler;
+	cbhmd_x_handler_data_s *xd = ad->xhandler;
 	Ecore_X_Event_Client_Message *ev = event;
 
 	if (ev->message_type != xd->atomCBHM_MSG)
@@ -481,7 +469,7 @@ static Eina_Bool _xclient_msg_cb(void *data, int type, void *event)
 
 	if (!SAFE_STRCMP("set_owner", ev->data.b))
 	{
-		cbhm_send_event(ad, ev->win, "SET_OWNER");
+		cbhmd_x_handler_send_event(ad, ev->win, "SET_OWNER");
 	}
 	else if (!SAFE_STRNCMP("show", ev->data.b, 4))
 	{
@@ -491,13 +479,13 @@ static Eina_Bool _xclient_msg_cb(void *data, int type, void *event)
 #endif
 			ad->x_active_win = ev->win;
 			if (ev->data.b[4] == '1')
-				clipdrawer_paste_textonly_set(ad, EINA_FALSE);
+				cbhmd_drawer_text_only_mode_set(ad, EINA_FALSE);
 			else
-				clipdrawer_paste_textonly_set(ad, EINA_TRUE);
+				cbhmd_drawer_text_only_mode_set(ad, EINA_TRUE);
 
 			Ecore_X_Illume_Clipboard_State state = ecore_x_e_illume_clipboard_state_get(ad->x_active_win);
 			if(state != ECORE_X_ILLUME_CLIPBOARD_STATE_ON)
-				clipdrawer_activate_view(ad);
+				cbhmd_drawer_show(ad);
 
 #ifdef MDM_ENABLE
 		}
@@ -508,7 +496,7 @@ static Eina_Bool _xclient_msg_cb(void *data, int type, void *event)
 		Ecore_X_Illume_Clipboard_State state = ecore_x_e_illume_clipboard_state_get(ad->x_active_win);
 		if(state == ECORE_X_ILLUME_CLIPBOARD_STATE_ON)
 		{
-			clipdrawer_lower_view(ad);
+			cbhmd_drawer_hide(ad);
 		}
 	}
 	else if (!SAFE_STRCMP("get count", ev->data.b))
@@ -541,7 +529,7 @@ static Eina_Bool _xclient_msg_cb(void *data, int type, void *event)
 			index++;
 		}
 
-		CNP_ITEM *item = item_get_by_index(ad, itempos);
+		cbhmd_cnp_item_s *item = item_get_by_index(ad, itempos);
 		if (!item)
 		{
 			Ecore_X_Atom itemtype = ecore_x_atom_get("CBHM_ERROR");
@@ -657,7 +645,7 @@ static Eina_Bool _xclient_msg_cb(void *data, int type, void *event)
 			sprintf(atomname, "CBHM_c%d", num);
 			cbhm_atoms[0] = XInternAtom(g_disp, atomname, False);
 
-			CNP_ITEM *item = clipdr;
+			cbhmd_cnp_item_s *item = clipdr;
 
 
 			if (clipdrawer_get_item_data(ad, num) != NULL)
@@ -713,9 +701,9 @@ static Eina_Bool _xfocus_out_cb(void *data, int type, void *event)
 	FN_CALL();
 	if (!data || !event) return ECORE_CALLBACK_PASS_ON;
 
-	AppData *ad = data;
+	cbhmd_app_data_s *ad = data;
 	DBG("XE:FOCUS OUT");
-	clipdrawer_lower_view(ad);
+	cbhmd_drawer_hide(ad);
 	return EINA_TRUE;
 }
 
@@ -723,8 +711,8 @@ static Eina_Bool _xproperty_notify_cb(void *data, int type, void *event)
 {
     if (!data || !event) return ECORE_CALLBACK_PASS_ON;
 
-	AppData *ad = data;
-	XHandlerData *xd = ad->xhandler;
+	cbhmd_app_data_s *ad = data;
+	cbhmd_x_handler_data_s *xd = ad->xhandler;
 #ifdef HAVE_X11
 	Ecore_X_Event_Window_Property *pevent = (Ecore_X_Event_Window_Property *)event;
 	char *filepath;
@@ -753,74 +741,26 @@ static Eina_Bool _xwin_destroy_cb(void *data, int type, void *event)
 	FN_CALL();
 	if (!data || !event) return ECORE_CALLBACK_PASS_ON;
 
-	AppData *ad = data;
+	cbhmd_app_data_s *ad = data;
 #ifdef HAVE_X11
 	Ecore_X_Event_Window_Destroy *pevent = event;
 	if (ad->x_active_win != pevent->win)
 		return ECORE_CALLBACK_PASS_ON;
 #endif
-	clipdrawer_lower_view(ad);
+	cbhmd_drawer_hide(ad);
 	return ECORE_CALLBACK_DONE;
 }
 
-XHandlerData *init_xhandler(AppData *ad)
+
+void slot_property_set(cbhmd_app_data_s *ad, int index)
 {
-	XHandlerData *xd = CALLOC(1, sizeof(XHandlerData));
-	if (!xd)
-		return NULL;
-
-#ifdef HAVE_X11
-	xd->xsel_clear_handler = ecore_event_handler_add(ECORE_X_EVENT_SELECTION_CLEAR, _xsel_clear_cb, ad);
-	xd->xsel_request_handler = ecore_event_handler_add(ECORE_X_EVENT_SELECTION_REQUEST, _xsel_request_cb, ad);
-	xd->xsel_notify_handler = ecore_event_handler_add(ECORE_X_EVENT_SELECTION_NOTIFY, _xsel_notify_cb, ad);
-	xd->xclient_msg_handler = ecore_event_handler_add(ECORE_X_EVENT_CLIENT_MESSAGE, _xclient_msg_cb, ad);
-	xd->xfocus_out_handler = ecore_event_handler_add(ECORE_X_EVENT_WINDOW_FOCUS_OUT, _xfocus_out_cb, ad);
-	xd->xproperty_notify_handler = ecore_event_handler_add(ECORE_X_EVENT_WINDOW_PROPERTY, _xproperty_notify_cb, ad);
-	xd->xwindow_destroy_handler = ecore_event_handler_add(ECORE_X_EVENT_WINDOW_DESTROY, _xwin_destroy_cb, ad);
-
-	xd->atomInc = ecore_x_atom_get("INCR");
-	xd->atomShotString = ecore_x_atom_get("_E_SHOT_IMG_FILEPATH");
-	xd->atomCBHM_MSG = ecore_x_atom_get("CBHM_MSG");
-	xd->atomCBHM_ITEM = ecore_x_atom_get("CBHM_ITEM");
-	xd->atomCBHMCount[ATOM_INDEX_COUNT_ALL] = ecore_x_atom_get("CBHM_cCOUNT");
-	xd->atomCBHMCount[ATOM_INDEX_COUNT_TEXT] = ecore_x_atom_get("CBHM_TEXT_cCOUNT");
-	xd->atomCBHMCount[ATOM_INDEX_COUNT_IMAGE] = ecore_x_atom_get("CBHM_IMAGE_cCOUNT");
-	xd->atomUTF8String = ecore_x_atom_get("UTF8_STRING");
-	xd->atomCBHM_SELECTED_ITEM = ecore_x_atom_get("CBHM_SELECTED_ITEM");
-
-	int i;
-	for (i = 0; i < ITEM_CNT_MAX; i++)
-	{
-		char buf[20];
-		snprintf(buf, sizeof(buf), "CBHM_ITEM%d", i);
-		xd->atomCBHM_ITEM = ecore_x_atom_get(buf);
-	}
-#endif
-
-	return xd;
-}
-
-void depose_xhandler(XHandlerData *xd)
-{
-	ecore_event_handler_del(xd->xsel_clear_handler);
-	ecore_event_handler_del(xd->xsel_request_handler);
-	ecore_event_handler_del(xd->xsel_notify_handler);
-	ecore_event_handler_del(xd->xclient_msg_handler);
-	ecore_event_handler_del(xd->xfocus_out_handler);
-	ecore_event_handler_del(xd->xproperty_notify_handler);
-	ecore_event_handler_del(xd->xwindow_destroy_handler);
-	FREE(xd);
-}
-
-void slot_property_set(AppData *ad, int index)
-{
-	XHandlerData *xd = ad->xhandler;
+	cbhmd_x_handler_data_s *xd = ad->xhandler;
 
 	if (index < 0)
 	{
 		int i = 0;
 		char buf[12];
-		CNP_ITEM *item;
+		cbhmd_cnp_item_s *item;
 		Eina_List *l;
 
 		EINA_LIST_FOREACH(ad->item_list, l, item)
@@ -852,7 +792,7 @@ void slot_property_set(AppData *ad, int index)
 #ifdef HAVE_X11
 		xd->atomCBHM_ITEM = ecore_x_atom_get(buf);
 
-		CNP_ITEM *item = item_get_by_index(ad, index);
+		cbhmd_cnp_item_s *item = item_get_by_index(ad, index);
 		if (!item)
 		{
 			Ecore_X_Atom itemtype = ecore_x_atom_get("CBHM_ERROR");
@@ -889,16 +829,13 @@ void slot_property_set(AppData *ad, int index)
 	}
 }
 
-void slot_item_count_set(AppData *ad)
+void cbhmd_x_handler_slot_item_count_set(cbhmd_app_data_s *ad)
 {
-
-#ifdef HAVE_X11
-	XHandlerData *xd = ad->xhandler;
+	cbhmd_x_handler_data_s *xd = ad->xhandler;
 	int i, icount;
 	char countbuf[10];
 
-	for (i = 0; i < ATOM_INDEX_COUNT_MAX; i++)
-	{
+	for (i = 0; i < ATOM_INDEX_COUNT_MAX; i++) {
 		icount = item_count_get(ad, i);
 		snprintf(countbuf, 10, "%d", icount);
 		ecore_x_window_prop_property_set(
@@ -909,13 +846,12 @@ void slot_item_count_set(AppData *ad)
 				countbuf,
 				strlen(countbuf)+1);
 	}
-#endif
 }
 
-void slot_selected_item_set(AppData *ad)
+void slot_selected_item_set(cbhmd_app_data_s *ad)
 {
-	XHandlerData *xd = ad->xhandler;
-	CNP_ITEM *item = ad->clip_selected_item;
+	cbhmd_x_handler_data_s *xd = ad->xhandler;
+	cbhmd_cnp_item_s *item = ad->selected_item;
 
 #ifdef HAVE_X11
 	if (item)
@@ -1004,3 +940,54 @@ Eina_Bool _mdm_get_allow_clipboard()
 #endif
 }
 #endif
+int cbhmd_x_handler_init(cbhmd_app_data_s *ad)
+{
+	FN_CALL();
+	cbhmd_x_handler_data_s *xd = CALLOC(1, sizeof(cbhmd_x_handler_data_s));
+	if (!xd) {
+		ERR("CALLOC() Fail");
+		return CBHM_ERROR_OUT_OF_MEMORY;
+	}
+
+	xd->xsel_clear_handler = ecore_event_handler_add(ECORE_X_EVENT_SELECTION_CLEAR, _xsel_clear_cb, ad);
+	xd->xsel_request_handler = ecore_event_handler_add(ECORE_X_EVENT_SELECTION_REQUEST, _xsel_request_cb, ad);
+	xd->xsel_notify_handler = ecore_event_handler_add(ECORE_X_EVENT_SELECTION_NOTIFY, _xsel_notify_cb, ad);
+	xd->xclient_msg_handler = ecore_event_handler_add(ECORE_X_EVENT_CLIENT_MESSAGE, _xclient_msg_cb, ad);
+	xd->xfocus_out_handler = ecore_event_handler_add(ECORE_X_EVENT_WINDOW_FOCUS_OUT, _xfocus_out_cb, ad);
+	xd->xproperty_notify_handler = ecore_event_handler_add(ECORE_X_EVENT_WINDOW_PROPERTY, _xproperty_notify_cb, ad);
+	xd->xwindow_destroy_handler = ecore_event_handler_add(ECORE_X_EVENT_WINDOW_DESTROY, _xwin_destroy_cb, ad);
+
+	xd->atomInc = ecore_x_atom_get("INCR");
+	xd->atomShotString = ecore_x_atom_get("_E_SHOT_IMG_FILEPATH");
+	xd->atomCBHM_MSG = ecore_x_atom_get("CBHM_MSG");
+	xd->atomCBHM_ITEM = ecore_x_atom_get("CBHM_ITEM");
+	xd->atomCBHMCount[ATOM_INDEX_COUNT_ALL] = ecore_x_atom_get("CBHM_cCOUNT");
+	xd->atomCBHMCount[ATOM_INDEX_COUNT_TEXT] = ecore_x_atom_get("CBHM_TEXT_cCOUNT");
+	xd->atomCBHMCount[ATOM_INDEX_COUNT_IMAGE] = ecore_x_atom_get("CBHM_IMAGE_cCOUNT");
+	xd->atomUTF8String = ecore_x_atom_get("UTF8_STRING");
+	xd->atomCBHM_SELECTED_ITEM = ecore_x_atom_get("CBHM_SELECTED_ITEM");
+
+	int i;
+	for (i = 0; i < ITEM_CNT_MAX; i++)
+	{
+		char buf[20];
+		snprintf(buf, sizeof(buf), "CBHM_ITEM%d", i);
+		xd->atomCBHM_ITEM = ecore_x_atom_get(buf);
+	}
+
+	ad->xhandler = xd;
+
+	return CBHM_ERROR_NONE;
+}
+
+void cbhmd_x_handler_deinit(cbhmd_x_handler_data_s *xd)
+{
+	ecore_event_handler_del(xd->xsel_clear_handler);
+	ecore_event_handler_del(xd->xsel_request_handler);
+	ecore_event_handler_del(xd->xsel_notify_handler);
+	ecore_event_handler_del(xd->xclient_msg_handler);
+	ecore_event_handler_del(xd->xfocus_out_handler);
+	ecore_event_handler_del(xd->xproperty_notify_handler);
+	ecore_event_handler_del(xd->xwindow_destroy_handler);
+	FREE(xd);
+}

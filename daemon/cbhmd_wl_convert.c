@@ -15,25 +15,4 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_STORAGE__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_STORAGE__
-
-#include <Eet.h>
-#include <Eina.h>
-#include <Ecore.h>
-
-#include "cbhmd.h"
-#include "cbhmd_item_manager.h"
-
-typedef double indexType; /* Ecore_Time */
-
-struct _cbhmd_storage_data {
-	Eet_File *ef;
-	indexType indexTable[ITEM_CNT_MAX];
-	cbhmd_cnp_item_s *itemTable[ITEM_CNT_MAX];
-};
-
-cbhmd_storage_data_s *cbhmd_storage_init(cbhmd_app_data_s *ad);
-void depose_storage(cbhmd_storage_data_s *sd);
-
-#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_STORAGE__ */
+#include "cbhmd_wl_convert.h"

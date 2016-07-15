@@ -7,22 +7,27 @@ SET(SHARED_DIR "${PREFIX}/shared")
 SET(VERSION 0.1.0)
 
 SET(DAEMON_SRCS cbhmd.c
-	cbhmd_clipdrawer.c
-	cbhmd_converter.c
+	cbhmd_convert.c
+	cbhmd_drawer.c
+	cbhmd_handler.c
 	cbhmd_item_manager.c
+	cbhmd_message.c	
 	cbhmd_storage.c
 	cbhmd_utils.c
+
 )
 
 IF (WAYLAND_SUPPORT)
-SET(DAEMON_SRCS ${DAEMON_SRCS} cbhmd_converter_wl.c
-    cbhmd_handler_wl.c
+SET(DAEMON_SRCS ${DAEMON_SRCS} cbhmd_wl_convert.c
+    cbhmd_wl_drawer.c
+    cbhmd_wl_handler.c
 )
 ENDIF (WAYLAND_SUPPORT)
 
 IF (X11_SUPPORT)
-SET(DAEMON_SRCS ${DAEMON_SRCS} cbhmd_converter_x.c
-	cbhmd_handler_x.c
+SET(DAEMON_SRCS ${DAEMON_SRCS} cbhmd_x_convert.c
+	cbhmd_x_drawer.c
+	cbhmd_x_handler.c
 )
 ENDIF (X11_SUPPORT)
 

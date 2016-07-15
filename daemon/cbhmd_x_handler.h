@@ -26,7 +26,7 @@
 #include <mdm.h>
 #endif
 
-struct _XHandlerData {
+struct _cbhmd_x_handler_data {
 	Ecore_Event_Handler *xsel_clear_handler;
 	Ecore_Event_Handler *xsel_request_handler;
 	Ecore_Event_Handler *xsel_notify_handler;
@@ -53,19 +53,18 @@ struct _XHandlerData {
 
 #include "cbhmd.h"
 
-XHandlerData *init_xhandler(AppData *data);
-void depose_xhandler(XHandlerData *xd);
+int cbhmd_x_handler_init(cbhmd_app_data_s *ad);
+void cbhmd_x_handler_deinit(cbhmd_x_handler_data_s *xd);
 
-#ifdef HAVE_X11
-Eina_Bool is_cbhm_selection_owner(AppData *ad, Ecore_X_Selection selection);
-Eina_Bool set_selection_owner(AppData *ad, Ecore_X_Selection selection, CNP_ITEM *item);
-#endif
-void slot_property_set(AppData *ad, int index);
-void slot_item_count_set(AppData *ad);
-void slot_selected_item_set(AppData *ad);
-#ifdef HAVE_X11
-Eina_Bool cbhm_send_event(AppData *ad, Ecore_X_Window xwin, char *msg);
-#endif
+Eina_Bool is_cbhm_selection_owner(cbhmd_app_data_s *ad, Ecore_X_Selection selection);
+Eina_Bool set_selection_owner(cbhmd_app_data_s *ad, Ecore_X_Selection selection, cbhmd_cnp_item_s *item);
+
+void slot_property_set(cbhmd_app_data_s *ad, int index);
+void cbhmd_x_handler_slot_item_count_set(cbhmd_app_data_s *ad);
+void slot_selected_item_set(cbhmd_app_data_s *ad);
+
+Eina_Bool cbhmd_x_handler_send_event(cbhmd_app_data_s *ad, Ecore_X_Window xwin, char *msg);
+
 Eina_Bool _mdm_get_allow_clipboard();	// magnolia only
 
 #define SELECTION_CHECK_TIME 10.0

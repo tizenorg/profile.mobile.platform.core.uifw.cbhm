@@ -27,14 +27,14 @@
 #define STORAGE_KEY_ITEM_FORMAT "<item%02d%s>"
 #define STORAGE_INDEX_ITEM_NONE 0.0
 
-static Eina_Bool item_write(Eet_File *ef, int index, CNP_ITEM *item);
+static Eina_Bool item_write(Eet_File *ef, int index, cbhmd_cnp_item_s *item);
 static Eina_Bool item_delete(Eet_File *ef, int index);
-static Eina_Bool storage_index_write(StorageData *sd, int index);
-static Eina_Bool storage_item_write(AppData *ad, CNP_ITEM *item);
-static Eina_Bool storage_item_delete(AppData *ad, CNP_ITEM *item);
-static Eina_Bool storage_item_update(AppData *ad, CNP_ITEM *item);
-static CNP_ITEM *storage_item_load(StorageData *sd, int index);
-//static void dump_items(StorageData *sd);
+static Eina_Bool storage_index_write(cbhmd_storage_data_s *sd, int index);
+static Eina_Bool storage_item_write(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item);
+static Eina_Bool storage_item_delete(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item);
+static Eina_Bool storage_item_update(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item);
+static cbhmd_cnp_item_s *storage_item_load(cbhmd_storage_data_s *sd, int index);
+//static void dump_items(cbhmd_storage_data_s *sd);
 
 static int getMinIndex(indexType *indexTable, int len)
 {
@@ -71,10 +71,10 @@ static int getMaxIndex(indexType *indexTable, int len)
 	return maxIndex;
 }
 
-StorageData *init_storage(AppData *ad)
+cbhmd_storage_data_s *cbhmd_storage_init(cbhmd_app_data_s *ad)
 {
 	FN_CALL();
-	StorageData *sd = CALLOC(1, sizeof(StorageData));
+	cbhmd_storage_data_s *sd = CALLOC(1, sizeof(cbhmd_storage_data_s));
 	if (!sd) return EINA_FALSE;
 
 	eet_init();
@@ -134,7 +134,7 @@ StorageData *init_storage(AppData *ad)
 			{
 				j = index_order[i];
 				if (sd->itemTable[j])
-					item_add_by_CNP_ITEM(ad, sd->itemTable[j], EINA_FALSE, EINA_FALSE);
+					item_add_by_cbhmd_cnp_item(ad, sd->itemTable[j], EINA_FALSE, EINA_FALSE);
 			}
 		}
 		else
@@ -155,7 +155,7 @@ StorageData *init_storage(AppData *ad)
 	return sd;
 }
 
-void depose_storage(StorageData *sd)
+void depose_storage(cbhmd_storage_data_s *sd)
 {
 	FN_CALL();
 	//dump_items(sd);
@@ -166,20 +166,20 @@ void depose_storage(StorageData *sd)
 	ecore_file_shutdown();
 }
 /*
-static void dump_items(StorageData *sd)
+static void dump_items(cbhmd_storage_data_s *sd)
 {
 	FN_CALL();
 	int i;
 	for (i = 0; i < ITEM_CNT_MAX; i++)
 	{
-		CNP_ITEM *item = storage_item_load(sd, i);
+		cbhmd_cnp_item_s *item = storage_item_load(sd, i);
 		if (item)
 			DBG("item #%d type_index: 0x%x, gitem_style: 0x%x, data: %s\n, len: %d\n, file: %s\n, file_len: %d\n", i, item->type_index, item->gitem_style, (char *)item->data, item->len, (char *)item->file, item->file_len);
 		free(item);
 	}
 }
 */
-static Eina_Bool item_write(Eet_File *ef, int index, CNP_ITEM *item)
+static Eina_Bool item_write(Eet_File *ef, int index, cbhmd_cnp_item_s *item)
 {
 	if (!ef)
 	{
@@ -253,11 +253,11 @@ static Eina_Bool item_delete(Eet_File *ef, int index)
 	return ret != 0;
 }
 
-static Eina_Bool storage_item_update(AppData *ad, CNP_ITEM *item)
+static Eina_Bool storage_item_update(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item)
 {
 	FN_CALL();
-	StorageData *sd = ad->storage;
-	CNP_ITEM *temp;
+	cbhmd_storage_data_s *sd = ad->storage;
+	cbhmd_cnp_item_s *temp;
 	Eina_Bool ret = EINA_FALSE;
 	int index;
 	char datakey[20];
@@ -293,11 +293,11 @@ static Eina_Bool storage_item_update(AppData *ad, CNP_ITEM *item)
 
 }
 
-static Eina_Bool storage_item_write(AppData *ad, CNP_ITEM *item)
+static Eina_Bool storage_item_write(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item)
 {
 	FN_CALL();
-	StorageData *sd = ad->storage;
-	CNP_ITEM *temp;
+	cbhmd_storage_data_s *sd = ad->storage;
+	cbhmd_cnp_item_s *temp;
 	Eina_Bool ret = EINA_TRUE;
 	int index;
 
@@ -331,10 +331,10 @@ static Eina_Bool storage_item_write(AppData *ad, CNP_ITEM *item)
 	return ret;
 }
 
-static Eina_Bool storage_item_delete(AppData *ad, CNP_ITEM *item)
+static Eina_Bool storage_item_delete(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item)
 {
 	FN_CALL();
-	StorageData *sd = ad->storage;
+	cbhmd_storage_data_s *sd = ad->storage;
 	Eina_Bool ret = EINA_FALSE;
 	int index;
 
@@ -354,7 +354,7 @@ static Eina_Bool storage_item_delete(AppData *ad, CNP_ITEM *item)
 	return ret;
 }
 
-static CNP_ITEM *storage_item_load(StorageData *sd, int index)
+static cbhmd_cnp_item_s *storage_item_load(cbhmd_storage_data_s *sd, int index)
 {
 	if (!sd->ef)
 	{
@@ -367,7 +367,7 @@ static CNP_ITEM *storage_item_load(StorageData *sd, int index)
 	char datakey[20];
 	char *read_data;
 	int read_size;
-	CNP_ITEM *item = CALLOC(1, sizeof(CNP_ITEM));
+	cbhmd_cnp_item_s *item = CALLOC(1, sizeof(cbhmd_cnp_item_s));
 
 	if (!item) {
 		ERR("item CALLOC failed");
@@ -434,7 +434,7 @@ static CNP_ITEM *storage_item_load(StorageData *sd, int index)
 	return item;
 }
 
-static Eina_Bool storage_index_write(StorageData *sd, int index)
+static Eina_Bool storage_index_write(cbhmd_storage_data_s *sd, int index)
 {
 	FN_CALL();
 	Eina_Bool ret;

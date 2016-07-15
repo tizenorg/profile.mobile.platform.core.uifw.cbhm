@@ -15,17 +15,8 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__
+#include "cbhmd_x_convert.h"
 
-#ifdef HAVE_X11
-#include "cbhmd_converter_x.h"
-#endif
-#ifdef HAVE_WAYLAND
-#include "cbhmd_converter_wl.h"
-#endif
+#include "cbhmd_utils.h"
 
-char* string_for_entry_get(AppData *ad, int type_index, const char *str);
-char* string_for_image_path_get(AppData *ad, int type_index, const char *str);
 
-#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__ */
