@@ -19,18 +19,18 @@
 
 void* d_malloc(const char *func, int line, size_t size)
 {
-	char *m = malloc(size);
-	DBG("in %s, %d: 0x%p = malloc(%d)", func, line, m, size);
-	return m;
+   char *m = malloc(size);
+   //  DBG("in %s, %d: 0x%p = malloc(%d)", func, line, m, size);
+   return m;
 }
 void* d_calloc(const char *func, int line, size_t n, size_t size)
 {
-	char *m = calloc(n, size);
-	DBG("in %s, %d: 0x%p = calloc(%d)", func, line, m, size);
-	return m;
+   char *m = calloc(n, size);
+   //  DBG("in %s, %d: 0x%p = calloc(%d)", func, line, m, size);
+   return m;
 }
 void d_free(const char *func, int line, void *m)
 {
-	DBG("in %s, %d: free(0x%p)", func, line, m);
-	free(m);
+   //  DBG("in %s, %d: free(0x%p)", func, line, m);
+   free(m);
 }

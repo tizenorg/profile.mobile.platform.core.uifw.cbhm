@@ -15,26 +15,29 @@
  *
  */
 
-#include "cbhmd_converter.h"
+#include "cbhm_log.h"
+#include "cbhmd_appdata.h"
+#include "cbhmd_handler.h"
 
-char* string_for_entry_get(AppData *ad, int type_index, const char *str)
+int cbhmd_handler_init(Cbhmd_App_Data *ad)
 {
+   int ret;
 #ifdef HAVE_X11
-   return x_string_for_entry_get(ad, type_index, str);
+   ret = cbhmd_x_handler_init(ad);
+   if (CBHM_ERROR_NONE != ret)
+     {
+        ERR("cbhmd_x_handler_init() Fail(%d", ret);
+        return ret;
+     }
 #endif
 #ifdef HAVE_WAYLAND
-   return wl_string_for_entry_get(ad, type_index, str);
+   ret = cbhmd_wl_handler_init(ad);
+   if (CBHM_ERROR_NONE != ret)
+     {
+        ERR("cbhmd_wl_handler_init() Fail(%d", ret);
+        return ret;
+     }
 #endif
 
-   return NULL;
-}
-
-char* string_for_image_path_get(AppData *ad, int type_index, const char *str)
-{
-#ifdef HAVE_X11
-   return x_string_for_image_path_get(ad, type_index, str);
-#endif
-#ifdef HAVE_WAYLAND
-   return wl_string_for_image_path_get(ad, type_index, str);
-#endif
+   return CBHM_ERROR_NONE;
 }
