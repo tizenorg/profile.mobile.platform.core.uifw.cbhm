@@ -18,29 +18,31 @@
 #ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__
 #define __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__
 
-
 #ifdef HAVE_X11
 #include "cbhmd_handler_x.h"
 #endif
 #ifdef HAVE_WAYLAND
-#include "cbhmd_handler_wl.h"
+#include "cbhmd_wl_handler.h"
 #endif
 
 #include "cbhmd.h"
 
-typedef char* (*text_converter_func)(void *ad, int type_index, const char *str);
+typedef char* (*text_converter_func)(Cbhmd_App_Data *ad, int type_index,
+                                     const char *str);
 
-struct _TargetHandler {
+struct _Cbhmd_Handler_Target
+{
 #ifdef HAVE_X11
-	Ecore_X_Atom *atom;
+   Ecore_X_Atom *atom;
 #else
-	unsigned int *atom;
+   unsigned int *atom;
 #endif
-	char **name;
-	int atom_cnt;
-	text_converter_func convert_to_entry;
-	text_converter_func convert_to_target[ATOM_INDEX_MAX];
+   char **name;
+   int atom_cnt;
+   text_converter_func convert_to_entry;
+   text_converter_func convert_to_target[ATOM_INDEX_MAX];
 };
 
+int cbhmd_handler_init(Cbhmd_App_Data *ad);
 
 #endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__ */
