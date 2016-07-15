@@ -59,7 +59,7 @@ enum GRID_ITEM_STYLE {
 	GRID_ITEM_STYLE_MAX = 3
 };
 
-struct _CNP_ITEM {
+struct _cbhmd_cnp_item {
 	int type_index;
 	void *data;
 	size_t len;
@@ -70,25 +70,25 @@ struct _CNP_ITEM {
 	Eina_Bool img_from_markup;
 	Elm_Object_Item *gitem;
 	Eina_Bool locked;
-	AppData *ad;
+	cbhmd_app_data_s *ad;
 };
 
-CNP_ITEM *item_add_by_CNP_ITEM(AppData *ad, CNP_ITEM *item, Eina_Bool storage, Eina_Bool show_msg);
+cbhmd_cnp_item_s *item_add_by_cbhmd_cnp_item(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item, Eina_Bool storage, Eina_Bool show_msg);
 #ifdef HAVE_X11
-CNP_ITEM *item_add_by_data(AppData *ad, Ecore_X_Atom type, void *data, int len, Eina_Bool show_msg);
+cbhmd_cnp_item_s *item_add_by_data(cbhmd_app_data_s *ad, Ecore_X_Atom type, void *data, int len, Eina_Bool show_msg);
 #else
-CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool show_msg);
+cbhmd_cnp_item_s *item_add_by_data(cbhmd_app_data_s *ad, int type, void *data, int len, Eina_Bool show_msg);
 #endif
 
-CNP_ITEM *item_get_by_index(AppData *ad, int index);
-CNP_ITEM *item_get_by_data(AppData *ad, void *data, int len);
-CNP_ITEM *item_get_last(AppData *ad);
+cbhmd_cnp_item_s *item_get_by_index(cbhmd_app_data_s *ad, int index);
+cbhmd_cnp_item_s *item_get_by_data(cbhmd_app_data_s *ad, void *data, int len);
+cbhmd_cnp_item_s *item_get_last(cbhmd_app_data_s *ad);
 
-void item_delete_by_CNP_ITEM(AppData *ad, CNP_ITEM *item);
-void item_delete_by_data(AppData *ad, void *data, int len);
-void item_delete_by_index(AppData *ad, int index);
-void item_clear_all(AppData *ad);
-int item_count_get(AppData *ad, int atom_index);
+void item_delete_by_cbhmd_cnp_item(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item);
+void item_delete_by_data(cbhmd_app_data_s *ad, void *data, int len);
+void item_delete_by_index(cbhmd_app_data_s *ad, int index);
+void item_clear_all(cbhmd_app_data_s *ad);
+int item_count_get(cbhmd_app_data_s *ad, int atom_index);
 
 #endif /*__CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM_MANAGER__*/
 

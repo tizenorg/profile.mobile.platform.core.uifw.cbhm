@@ -27,13 +27,13 @@
 
 typedef double indexType; /* Ecore_Time */
 
-struct _StorageData {
+struct _cbhmd_storage_data {
 	Eet_File *ef;
 	indexType indexTable[ITEM_CNT_MAX];
-	CNP_ITEM *itemTable[ITEM_CNT_MAX];
+	cbhmd_cnp_item_s *itemTable[ITEM_CNT_MAX];
 };
 
-StorageData *init_storage(AppData *ad);
-void depose_storage(StorageData *sd);
+cbhmd_storage_data_s *cbhmd_storage_init(cbhmd_app_data_s *ad);
+void depose_storage(cbhmd_storage_data_s *sd);
 
 #endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_STORAGE__ */

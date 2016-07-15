@@ -15,26 +15,10 @@
  *
  */
 
-#include "cbhmd_converter.h"
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_MESSAGE__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_MESSAGE__
 
-char* string_for_entry_get(AppData *ad, int type_index, const char *str)
-{
-#ifdef HAVE_X11
-   return x_string_for_entry_get(ad, type_index, str);
-#endif
-#ifdef HAVE_WAYLAND
-   return wl_string_for_entry_get(ad, type_index, str);
-#endif
+int cbhmd_message_eldbus_init();
+void cbhmd_message_eldbus_deinit();
 
-   return NULL;
-}
-
-char* string_for_image_path_get(AppData *ad, int type_index, const char *str)
-{
-#ifdef HAVE_X11
-   return x_string_for_image_path_get(ad, type_index, str);
-#endif
-#ifdef HAVE_WAYLAND
-   return wl_string_for_image_path_get(ad, type_index, str);
-#endif
-}
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_MESSAGE__ */

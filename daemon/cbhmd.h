@@ -29,6 +29,7 @@
 #endif
 
 #include "cbhm_log.h"
+#include "cbhm_error.h"
 
 #if !defined(PACKAGE)
 #define PACKAGE "cbhm"
@@ -45,7 +46,7 @@
 #define CBHM_DATA_PATH tzplatform_mkpath(TZ_USER_DATA, "cbhm")
 #define COPIED_DATA_STORAGE_DIR tzplatform_mkpath(TZ_USER_DATA, "cbhm/.cbhm_files")
 
-enum ATOM_INDEX {
+enum {
 	ATOM_INDEX_TARGET = 0,
 	ATOM_INDEX_TEXT = 1,
 	ATOM_INDEX_HTML = 2,
@@ -55,7 +56,7 @@ enum ATOM_INDEX {
 	ATOM_INDEX_MAX = 6
 };
 
-enum ATOM_INDEX_COUNT {
+enum {
 	ATOM_INDEX_COUNT_ALL = 0,
 	ATOM_INDEX_COUNT_TEXT = 1,
 	ATOM_INDEX_COUNT_IMAGE = 2,

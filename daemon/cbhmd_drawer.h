@@ -19,13 +19,19 @@
 #define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_H__
 
 #ifdef HAVE_X11
-//#include <Ecore_X.h>
+#include <Ecore_X.h>
 #endif
 #ifdef HAVE_WAYLAND
 #include <Ecore_Wayland.h>
 #endif
 
 #include "cbhmd.h"
+#ifdef HAVE_X11
+#include "cbhmd_x_drawer.h"
+#endif
+#ifdef HAVE_WAYLAND
+#include "cbhmd_wl_drawer.h"
+#endif
 #include "cbhmd_appdata.h"
 
 typedef enum _AnimStatus AnimStatus;
@@ -35,7 +41,7 @@ enum _AnimStatus {
 	HIDE_ANIM
 };
 
-struct _ClipdrawerData {
+struct _cbhmd_drawer_data {
 	Evas_Object *main_win;
 	Evas_Object *gengrid;
 	Evas_Object *main_layout;
@@ -77,7 +83,8 @@ struct _ClipdrawerData {
 	Eina_Bool popup_activate:1;
 	Eina_Bool paste_text_only:1;
 	Eina_Bool item_clicked:1;
-	Eina_Bool delbtn_clicked:1;
+	Eina_Bool del_btn_clicked:1;
+	Eina_Bool send_item_clicked:1;
 	Eina_Bool http_path:1;
 	Evas_Object *event_rect;
 	Evas_Object *gesture_layer;
@@ -85,12 +92,19 @@ struct _ClipdrawerData {
 
 Eina_Bool delete_mode;
 
-void set_rotation_to_clipdrawer(AppData *ad);
-void clipdrawer_activate_view(AppData *ad);
-void clipdrawer_lower_view(AppData *ad);
-ClipdrawerData *init_clipdrawer(AppData *ad);
-void depose_clipdrawer(ClipdrawerData *cd);
-void _delete_mode_set(AppData *ad, Eina_Bool del_mode);
-void clipdrawer_paste_textonly_set(AppData *ad, Eina_Bool textonly);
+void cbhmd_drawer_set_rotation(cbhmd_app_data_s *ad);
+void cbhmd_drawer_show(cbhmd_app_data_s *ad);
+void cbhmd_drawer_hide(cbhmd_app_data_s *ad);
+cbhmd_drawer_data_s* cbhmd_drawer_init(cbhmd_app_data_s *ad);
+void cbhmd_drawer_deinit(cbhmd_drawer_data_s *dd);
+
+void cbhmd_drawer_delete_mode_set(cbhmd_app_data_s *ad, Eina_Bool del_mode);
+void cbhmd_drawer_text_only_mode_set(cbhmd_app_data_s *ad, Eina_Bool textonly);
+Eina_Bool cbhmd_drawer_text_only_mode_get(cbhmd_app_data_s *ad);
+
+void cbhmd_drawer_focus_set(cbhmd_app_data_s *ad, Eina_Bool enable);
+int cbhmd_drawer_event_window_create(cbhmd_app_data_s *ad);
+void cbhmd_drawer_event_window_set_title(cbhmd_app_data_s *ad);
+int cbhmd_drawer_display_init(cbhmd_app_data_s *ad);
 
 #endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CLIPDRAWER_H__ */

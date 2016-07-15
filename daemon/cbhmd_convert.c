@@ -15,33 +15,33 @@
  *
  */
 
-#include "cbhmd_converter_x.h"
-
 #include "cbhmd_utils.h"
+#include "cbhmd_convert.h"
 
-static char* html_to_entry(AppData *ad, int type_index, const char *str);
-static char* efl_to_entry(AppData *ad, int type_index, const char *str);
-static char* text_to_entry(AppData *ad, int type_index, const char *str);
-static char* image_path_to_entry(AppData *ad, int type_index, const char *str);
-static char* polaris_to_entry(AppData *ad, int type_index, const char *str);
+static char* __convert_html_to_entry_cb(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_efl_to_entry_cb(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_text_to_entry_cb(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_image_path_to_entry_cb(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_polaris_to_entry_cb(cbhmd_app_data_s *ad, int type_index, const char *str);
 
-//static char* make_close_tag(Eina_List* nodes);
-static char* do_not_convert(AppData *ad, int type_index, const char *str);
-static char* html_to_efl(AppData *ad, int type_index, const char *str);
-static char* efl_to_html(AppData *ad, int type_index, const char *str);
-static char* text_to_html(AppData *ad, int type_index, const char *str);
-static char* text_to_efl(AppData *ad, int type_index, const char *str);
-static char* to_text(AppData *ad, int type_index, const char *str);
-static char* image_path_to_html(AppData *ad, int type_index, const char *str);
-static char* image_path_to_efl(AppData *ad, int type_index, const char *str);
-//static char* image_path_to_text(AppData *ad, int type_index, const char *str);
-//static char* efl_to_efl(AppData *ad, int type_index, const char *str);
-//static char* html_to_html(AppData *ad, int type_index, const char *str);
-static char* image_path_to_image_path(AppData *ad, int type_index, const char *str);
-static char* html_to_image_path(AppData *ad, int type_index, const char *str);
-static char* efl_to_image_path(AppData *ad, int type_index, const char *str);
+//static char* __convert_make_close_tag_cb(Eina_List* nodes);
+char* __convert_entry_emoticon_to_normal_text(const char *src_text);
+static char* __convert_do_not_convert(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_html_to_efl(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_efl_to_html(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_text_to_html(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_text_to_efl(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_to_text(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_image_path_to_html(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_image_path_to_efl(cbhmd_app_data_s *ad, int type_index, const char *str);
+//static char* image_path_to_text(cbhmd_app_data_s *ad, int type_index, const char *str);
+//static char* __convert_efl_to_efl_cb(cbhmd_app_data_s *ad, int type_index, const char *str);
+//static char* __convert_html_to_html_cb(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_image_path_to_image_path(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_html_to_image_path(cbhmd_app_data_s *ad, int type_index, const char *str);
+static char* __convert_efl_to_image_path(cbhmd_app_data_s *ad, int type_index, const char *str);
 
-ENTRY_EMOTICON_S emotion_name_table[ENTRY_EMOTICON_MAX] = {
+ENTRY_EMOTICON_S cbhmd_emotion_name_table[ENTRY_EMOTICON_MAX] = {
 	[ENTRY_EMOTICON_HAPPY] = {"emoticon/happy", ":-)"},
 	[ENTRY_EMOTICON_SORRY] = {"emoticon/sorry", ":-("},
 	[ENTRY_EMOTICON_WINK] = {"emoticon/wink", ";-)"},
@@ -62,15 +62,38 @@ ENTRY_EMOTICON_S emotion_name_table[ENTRY_EMOTICON_MAX] = {
 	[ENTRY_EMOTICON_MINIMAL_SMILE] = {"emoticon/minimal-smile", ":-|"},
 };
 
+char* cbhmd_convert_get_entry_string(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
+{
+	DBG("type_index(%d), str(%s)", type_index, str);
+	if (ad->targetAtoms[type_index].convert_to_entry)
+		return ad->targetAtoms[type_index].convert_to_entry(ad, type_index, str);
+
+	return NULL;
+}
+
+char* cbhmd_convert_get_image_path_string(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
+{
+	DBG("type_index: %d str: %s ", type_index, str);
+	char *image_path = NULL;
+
+	if (type_index == ATOM_INDEX_HTML)
+		image_path = __convert_html_to_image_path(ad, type_index, str);
+	else if (type_index == ATOM_INDEX_EFL)
+		image_path = __convert_efl_to_image_path(ad, type_index, str);
+
+	return image_path;
+}
+
 #ifdef HAVE_X11
-int atom_type_index_get(AppData *ad, Ecore_X_Atom atom)
+int atom_type_index_get(cbhmd_app_data_s *ad, Ecore_X_Atom atom)
 #else
-int atom_type_index_get(AppData *ad, int atom)
+int atom_type_index_get(cbhmd_app_data_s *ad, int atom)
 #endif
 {
 	int i, j;
-	for (i = 0; i < ATOM_INDEX_MAX; i++)
-	{
+	for (i = 0; i < ATOM_INDEX_MAX; i++) {
 		for (j = 0; j < ad->targetAtoms[i].atom_cnt; j++)
 			if (ad->targetAtoms[i].atom[j] == atom)
 				return i;
@@ -78,82 +101,10 @@ int atom_type_index_get(AppData *ad, int atom)
 	return -1;
 }
 
-void init_target_atoms(AppData *ad)
-{
-	int atom_cnt[ATOM_INDEX_MAX] = {
-		1, 5, 2, 1, 2, 1
-	};
-	char *targetAtomNames[][5] = {
-		{ "TARGETS" },
-		{ "UTF8_STRING", "STRING", "TEXT", "text/plain;charset=utf-8", "text/plain" },
-		{ "text/html;charset=utf-8", "text/html" },
-		{ "application/x-elementary-markup" },
-		{ "text/uri", "text/uri-list" },
-		{ "polaris-markup" }
-	};
-	text_converter_func converts_to_entry[ATOM_INDEX_MAX] = {
-		NULL, text_to_entry, html_to_entry, efl_to_entry, image_path_to_entry, polaris_to_entry
-	};
-
-	text_converter_func converts[ATOM_INDEX_MAX][ATOM_INDEX_MAX] = {
-		{NULL, NULL, NULL, NULL, NULL, NULL},
-		{NULL, do_not_convert, text_to_html, text_to_efl, NULL, NULL},
-		{NULL, to_text, do_not_convert, html_to_efl, html_to_image_path, NULL},
-		{NULL, to_text, efl_to_html, do_not_convert, do_not_convert, NULL},
-		{NULL, NULL, image_path_to_html, image_path_to_efl, image_path_to_image_path, NULL},
-		{NULL, to_text, NULL, NULL, NULL, do_not_convert}
-	};
-
-	int i, j;
-	for (i = 0; i < ATOM_INDEX_MAX; i++)
-	{
-		ad->targetAtoms[i].atom_cnt = atom_cnt[i];
-		ad->targetAtoms[i].name = MALLOC(sizeof(char *) * atom_cnt[i]);
 #ifdef HAVE_X11
-		ad->targetAtoms[i].atom = MALLOC(sizeof(Ecore_X_Atom) * atom_cnt[i]);
+static Eina_Bool targets_converter(cbhmd_app_data_s *ad, Ecore_X_Atom reqAtom, cbhmd_cnp_item_s *item, void **data_ret, int *size_ret, Ecore_X_Atom *ttype, int *tsize)
 #else
-		ad->targetAtoms[i].atom = MALLOC(sizeof(int) * atom_cnt[i]);
-#endif
-		for (j = 0; j < atom_cnt[i]; j++)
-		{
-			DBG("atomName: %s", targetAtomNames[i][j]);
-			ad->targetAtoms[i].name[j] = SAFE_STRDUP(targetAtomNames[i][j]);
-#ifdef HAVE_X11
-			ad->targetAtoms[i].atom[j] = ecore_x_atom_get(targetAtomNames[i][j]);
-#endif
-		}
-		ad->targetAtoms[i].convert_to_entry = converts_to_entry[i];
-
-		for (j = 0; j < ATOM_INDEX_MAX; j++)
-			ad->targetAtoms[i].convert_to_target[j] = converts[i][j];
-#ifdef HAVE_X11
-		ecore_x_selection_converter_atom_add(ad->targetAtoms[i].atom, target_converters[i]);
-		ecore_x_selection_converter_atom_add(ad->targetAtoms[i].atom, generic_converter);
-#endif
-	}
-}
-
-void depose_target_atoms(AppData *ad)
-{
-	int i, j;
-	for (i = 0; i < ATOM_INDEX_MAX; i++)
-	{
-		for (j = 0; j < ad->targetAtoms[i].atom_cnt; j++)
-		{
-			if (ad->targetAtoms[i].name[j])
-				FREE(ad->targetAtoms[i].name[j]);
-		}
-		if (ad->targetAtoms[i].name)
-			FREE(ad->targetAtoms[i].name);
-		if (ad->targetAtoms[i].atom)
-			FREE(ad->targetAtoms[i].atom);
-	}
-}
-
-#ifdef HAVE_X11
-static Eina_Bool targets_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, Ecore_X_Atom *ttype, int *tsize)
-#else
-static Eina_Bool targets_converter(AppData *ad, int reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, int *ttype, int *tsize)
+static Eina_Bool targets_converter(cbhmd_app_data_s *ad, int reqAtom, cbhmd_cnp_item_s *item, void **data_ret, int *size_ret, int *ttype, int *tsize)
 #endif
 {
 	FN_CALL();
@@ -211,9 +162,9 @@ static Eina_Bool targets_converter(AppData *ad, int reqAtom, CNP_ITEM *item, voi
 	if (!file)
 	{
 		if (item_type_index == ATOM_INDEX_HTML)
-			ad->targetAtoms[item_type_index].convert_to_target[ATOM_INDEX_IMAGE] = html_to_image_path;
+			ad->targetAtoms[item_type_index].convert_to_target[ATOM_INDEX_IMAGE] = __convert_html_to_image_path;
 		else if (item_type_index == ATOM_INDEX_EFL)
-			ad->targetAtoms[item_type_index].convert_to_target[ATOM_INDEX_IMAGE] = efl_to_image_path;
+			ad->targetAtoms[item_type_index].convert_to_target[ATOM_INDEX_IMAGE] = __convert_efl_to_image_path;
 	}
 
 	if (size_ret) *size_ret = count;
@@ -227,9 +178,9 @@ static Eina_Bool targets_converter(AppData *ad, int reqAtom, CNP_ITEM *item, voi
 }
 
 #ifdef HAVE_X11
-Eina_Bool generic_converter(AppData *ad, Ecore_X_Atom reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, Ecore_X_Atom *ttype, int *tsize)
+Eina_Bool generic_converter(cbhmd_app_data_s *ad, Ecore_X_Atom reqAtom, cbhmd_cnp_item_s *item, void **data_ret, int *size_ret, Ecore_X_Atom *ttype, int *tsize)
 #else
-Eina_Bool generic_converter(AppData *ad, int reqAtom, CNP_ITEM *item, void **data_ret, int *size_ret, int *ttype, int *tsize)
+Eina_Bool generic_converter(cbhmd_app_data_s *ad, int reqAtom, cbhmd_cnp_item_s *item, void **data_ret, int *size_ret, int *ttype, int *tsize)
 #endif
 {
 	FN_CALL();
@@ -533,7 +484,7 @@ _link_match_tags(Eina_List *nodes)
 		{
 			if (!eina_list_count(stack))
 			{
-				WRN("tag not matched %s", trail->tag);
+				WARN("tag not matched %s", trail->tag);
 				continue;
 			}
 
@@ -825,7 +776,7 @@ _dumpNode(Eina_List* nodes)
 						data->href, data->width, data->height);
 			}
 			else
-				WRN("ERROR!!!! not need tagData");
+				WARN("ERROR!!!! not need tagData");
 		}
 	}
 }
@@ -1053,28 +1004,8 @@ _convert_to_edje(Eina_List* nodes)
 	return ret;
 }
 
-char* x_string_for_entry_get(AppData *ad, int type_index, const char *str)
-{
-	DBG("type_index: %d str: %s ", type_index, str);
-	if (ad->targetAtoms[type_index].convert_to_entry)
-		return ad->targetAtoms[type_index].convert_to_entry(ad, type_index, str);
-	return NULL;
-}
-
-char *x_string_for_image_path_get(AppData *ad, int type_index, const char *str)
-{
-	DBG("type_index: %d str: %s ", type_index, str);
-	char *image_path = NULL;
-
-	if (type_index == ATOM_INDEX_HTML)
-		image_path = html_to_image_path(ad, type_index, str);
-	else if (type_index == ATOM_INDEX_EFL)
-		image_path = efl_to_image_path(ad, type_index, str);
-
-	return image_path;
-}
 /*
-static char* make_close_tag(Eina_List* nodes)
+static char* __convert_make_close_tag_cb(Eina_List* nodes)
 {
 	FN_CALL();
 	PTagNode trail;
@@ -1084,12 +1015,10 @@ static char* make_close_tag(Eina_List* nodes)
 
 	EINA_LIST_FOREACH(nodes, l, trail)
 	{
-		if (trail->tag)
-		{
+		if (trail->tag) {
 			if (trail->tag_str)
 				eina_strbuf_append(tag_str, trail->tag_str);
-			else
-			{
+			else {
 				eina_strbuf_append(tag_str, "<");
 				eina_strbuf_append(tag_str, trail->tag);
 				eina_strbuf_append(tag_str, ">");
@@ -1104,29 +1033,33 @@ static char* make_close_tag(Eina_List* nodes)
 	return ret;
 }
 */
-static char* do_not_convert(AppData *ad, int type_index, const char *str)
+
+static char* __convert_do_not_convert(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
 {
-	DBG("str: %s", str);
-	if (type_index != ATOM_INDEX_HTML)
-	{
-		char *emoticon_text = entry_convert_emoticon_to_normal_text(str);
+	DBG("str(%s)", str);
+	if (type_index != ATOM_INDEX_HTML) {
+		char *emoticon_text = __convert_entry_emoticon_to_normal_text(str);
 		return emoticon_text;
 	}
 	return SAFE_STRDUP(str);
 }
-/*
-   static char* efl_to_efl(AppData *ad, int type_index, const char *str)
-   {
-   FN_CALL();
-   return NULL;
-   }
 
-   static char* html_to_html(AppData *ad, int type_index, const char *str)
-   {
-   FN_CALL();
-   return NULL;
-   }
- */
+/*
+static char* __convert_efl_to_efl_cb(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
+{
+	FN_CALL();
+	return NULL;
+}
+
+static char* __convert_html_to_html_cb(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
+{
+	FN_CALL();
+	return NULL;
+}
+*/
 
 #define IMAGE_DEFAULT_WIDTH "240"
 #define IMAGE_DEFAULT_HEIGHT "180"
@@ -1160,34 +1093,34 @@ static char* make_image_path_tag(int type_index, const char *str)
 }
 
 /*
-static char* image_path_to_text(AppData *ad, int type_index, const char *str)
+static char* image_path_to_text(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	return make_image_path_tag(ATOM_INDEX_TEXT, str);
 }
 */
 
-static char* image_path_to_html(AppData *ad, int type_index, const char *str)
+static char* __convert_image_path_to_html(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	return make_image_path_tag(ATOM_INDEX_HTML, str);
 }
 
-static char* image_path_to_efl(AppData *ad, int type_index, const char *str)
+static char* __convert_image_path_to_efl(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	return make_image_path_tag(ATOM_INDEX_EFL, str);
 }
 
-static char* image_path_to_image_path(AppData *ad, int type_index, const char *str)
+static char* __convert_image_path_to_image_path(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	return make_image_path_tag(ATOM_INDEX_IMAGE, str);
 }
 
-static char* html_to_image_path(AppData *ad, int type_index, const char *str)
+static char* __convert_html_to_image_path(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	Eina_Strbuf *sbuf = eina_strbuf_new();
 	Eina_Bool image_path_exists = EINA_FALSE;
 	int len = SAFE_STRLEN(str);
@@ -1207,9 +1140,9 @@ static char* html_to_image_path(AppData *ad, int type_index, const char *str)
 					if (!SAFE_STRNCMP((p + 1), "http:/", 6) || !SAFE_STRNCMP((p + 1), "file:/", 6))
 					{
 						if (!SAFE_STRNCMP((p + 1), "http:/", 6))
-							ad->clipdrawer->http_path = EINA_TRUE;
+							ad->drawer->http_path = EINA_TRUE;
 						else
-							ad->clipdrawer->http_path = EINA_FALSE;
+							ad->drawer->http_path = EINA_FALSE;
 
 						p += 7;
 						s = p;
@@ -1225,7 +1158,7 @@ static char* html_to_image_path(AppData *ad, int type_index, const char *str)
 						for (; *p != '"'; p++);
 						eina_strbuf_append_length(sbuf, s, p - s);
 						image_path_exists = EINA_TRUE;
-						ad->clipdrawer->http_path = EINA_FALSE;
+						ad->drawer->http_path = EINA_FALSE;
 						break;
 					}
 				}
@@ -1246,39 +1179,35 @@ static char* html_to_image_path(AppData *ad, int type_index, const char *str)
 	return NULL;
 }
 
-static char* efl_to_image_path(AppData *ad, int type_index, const char *str)
+static char* __convert_efl_to_image_path(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	Eina_Strbuf *sbuf = eina_strbuf_new();
 	Eina_Bool image_path_exists = EINA_FALSE;
 	int len = SAFE_STRLEN(str);
-	char *p = entry_convert_emoticon_to_normal_text((char *)str);
+	char *p = __convert_entry_emoticon_to_normal_text((char *)str);
 	char *s, *temp;
 	char *image_path = NULL;
 	temp = p;
-	if (type_index == ATOM_INDEX_EFL)
-	{
-		for (s = p; (p - s) <= len; p++)
-		{
-			if (*p == '<')
-			{
-				if (!SAFE_STRNCMP((p + 1), "item", 3))
-				{
-					for (p += 5; *p != 'h'; p++);
-					if (!SAFE_STRNCMP(p, "href=file:/", 11))
-					{
+	if (type_index == ATOM_INDEX_EFL) {
+		for (s = p; (p - s) <= len; p++) {
+			if (*p == '<') {
+				if (!SAFE_STRNCMP((p + 1), "item", 3)) {
+					for (p += 5; *p != 'h'; p++)
+						;
+					if (!SAFE_STRNCMP(p, "href=file:/", 11)) {
 						p += 11;
 						s = p;
-						for (; *p != '>'; p++);
+						for (; *p != '>'; p++)
+							;
 						eina_strbuf_append_length(sbuf, s, p - s);
 						image_path_exists = EINA_TRUE;
 						break;
-					}
-					else if (!SAFE_STRNCMP(p, "href=", 5))
-					{
+					} else if (!SAFE_STRNCMP(p, "href=", 5)) {
 						p += 5;
 						s = p;
-						for (; *p != '>'; p++);
+						for (; *p != '>'; p++)
+							;
 						eina_strbuf_append_length(sbuf, s, p - s);
 						image_path_exists = EINA_TRUE;
 						break;
@@ -1288,22 +1217,23 @@ static char* efl_to_image_path(AppData *ad, int type_index, const char *str)
 		}
 	}
 	FREE(temp);
-	if (image_path_exists)
-	{
+
+	if (image_path_exists) {
 		image_path = eina_strbuf_string_steal(sbuf);
 		eina_strbuf_free(sbuf);
 		return image_path;
 	}
 
 	eina_strbuf_free(sbuf);
+
 	return NULL;
 }
 
-static char* markup_to_entry(AppData *ad, int type_index, const char *str)
+static char* __convert_markup_to_entry(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
 	FN_CALL();
-	if (!str)
-		return NULL;
+
+	RETV_IF(NULL == str, NULL);
 
 	Eina_Strbuf *strbuf = eina_strbuf_new();
 	if (!strbuf)
@@ -1312,16 +1242,14 @@ static char* markup_to_entry(AppData *ad, int type_index, const char *str)
 
 	const char *trail = str;
 
-	while (trail && *trail)
-	{
+	while (trail && *trail) {
 		const char *pretrail = trail;
 		unsigned long length;
 		char *temp;
 		char *endtag;
 
 		trail = SAFE_STRCHR(trail, '<');
-		if (!trail)
-		{
+		if (!trail) {
 			eina_strbuf_append(strbuf, pretrail);
 			break;
 		}
@@ -1332,8 +1260,7 @@ static char* markup_to_entry(AppData *ad, int type_index, const char *str)
 		length = trail - pretrail;
 
 		temp = SAFE_STRNDUP(pretrail, length);
-		if (!temp)
-		{
+		if (!temp) {
 			trail++;
 			continue;
 		}
@@ -1342,14 +1269,12 @@ static char* markup_to_entry(AppData *ad, int type_index, const char *str)
 		FREE(temp);
 		trail++;
 
-		if (trail[0] == '/')
-		{
+		if (trail[0] == '/') {
 			trail = endtag + 1;
 			continue;
 		}
 
-		if (!SAFE_STRNCMP(trail, "br", 2))
-		{
+		if (!SAFE_STRNCMP(trail, "br", 2)) {
 			eina_strbuf_append(strbuf, "<br>");
 			trail = endtag + 1;
 			continue;
@@ -1365,16 +1290,18 @@ static char* markup_to_entry(AppData *ad, int type_index, const char *str)
 	return entry_str;
 }
 
-static char* polaris_to_entry(AppData *ad, int type_index, const char *str)
+static char* __convert_polaris_to_entry_cb(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
 {
-	DBG("str: %s", str);
-	return markup_to_entry(ad, type_index, str);
+	DBG("str(%s)", str);
+	return __convert_markup_to_entry(ad, type_index, str);
 }
 
-static char* html_to_entry(AppData *ad, int type_index, const char *str)
+static char* __convert_html_to_entry_cb(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
 {
-	DBG("str: %s", str);
-	return markup_to_entry(ad, type_index, str);
+	DBG("str(%s)", str);
+	return __convert_markup_to_entry(ad, type_index, str);
 }
 
 static int entry_emoticon_origin_string(char **src_text, int* item_length)
@@ -1405,7 +1332,8 @@ static int entry_emoticon_origin_string(char **src_text, int* item_length)
 
 	for (i = 1; i < ENTRY_EMOTICON_MAX; i++) {
 		bzero(href_buf, sizeof(href_buf));
-		snprintf(href_buf, sizeof(href_buf), "href=%s", emotion_name_table[i].emoticon_name);
+		snprintf(href_buf, sizeof(href_buf), "href=%s",
+				cbhmd_emotion_name_table[i].emoticon_name);
 		emoticon = strstr(*src_text, href_buf);
 		if (emoticon) {
 			emoticon_pos = strlen(*src_text) - strlen(emoticon);
@@ -1421,7 +1349,7 @@ static int entry_emoticon_origin_string(char **src_text, int* item_length)
 	return ENTRY_EMOTICON_NONE;
 }
 
-char *entry_convert_emoticon_to_normal_text(const char *src_text)
+char* __convert_entry_emoticon_to_normal_text(const char *src_text)
 {
 	char *remain_text = (char *)src_text;
 	char *dst_str = NULL;
@@ -1434,11 +1362,14 @@ char *entry_convert_emoticon_to_normal_text(const char *src_text)
 		int emoticon = ENTRY_EMOTICON_NONE;
 		int emoticon_txt_length = 0;
 
-		emoticon = entry_emoticon_origin_string(&remain_text, &emoticon_txt_length);
+		emoticon = entry_emoticon_origin_string(&remain_text,
+				&emoticon_txt_length);
 
 		if (emoticon != ENTRY_EMOTICON_NONE) {
-			eina_strbuf_append_length(msg_data, text_start, remain_text - text_start);
-			eina_strbuf_append_printf(msg_data, "%s", emotion_name_table[emoticon].text);
+			eina_strbuf_append_length(msg_data, text_start,
+					remain_text - text_start);
+			eina_strbuf_append_printf(msg_data, "%s",
+					cbhmd_emotion_name_table[emoticon].text);
 
 			remain_text = remain_text + emoticon_txt_length;
 
@@ -1454,37 +1385,45 @@ char *entry_convert_emoticon_to_normal_text(const char *src_text)
 		}
 	}
 	str = eina_strbuf_string_get(msg_data);
-	if (str) dst_str = strdup(str);
+	if (str)
+		dst_str = strdup(str);
 	eina_strbuf_free(msg_data);
 
 	return dst_str;
 }
 
-static char* efl_to_entry(AppData *ad, int type_index, const char *str)
+static char* __convert_efl_to_entry_cb(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 
-	char *emoticon_text = entry_convert_emoticon_to_normal_text(str);
-	char *normal_text = markup_to_entry(ad, type_index, emoticon_text);
+	char *emoticon_text = __convert_entry_emoticon_to_normal_text(str);
+	char *normal_text = __convert_markup_to_entry(ad, type_index, emoticon_text);
 
 	return normal_text;
 }
 
-static char* image_path_to_entry(AppData *ad, int type_index, const char *str)
+static char* __convert_image_path_to_entry_cb(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
 {
 	FN_CALL();
 	return NULL;
 }
 
-static char* text_to_entry(AppData *ad, int type_index, const char *str)
+static char* __convert_text_to_entry_cb(cbhmd_app_data_s *ad, int type_index,
+		const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	char *markup = NULL;
-	char *emoticon_text = entry_convert_emoticon_to_normal_text(str);
+	char *for_entry = NULL;
+	char *emoticon_text = __convert_entry_emoticon_to_normal_text(str);
+
 	markup = (char*)evas_textblock_text_utf8_to_markup(NULL, emoticon_text);
-	char *for_entry = markup_to_entry(ad, type_index, markup);
+	for_entry = __convert_markup_to_entry(ad, type_index, markup);
+
 	FREE(markup);
 	FREE(emoticon_text);
+
 	return for_entry;
 }
 
@@ -1512,7 +1451,7 @@ static Eina_List *make_tag_list(int type_index, const char *str)
 			_set_HTML_tag_data(nodeList);
 			break;
 		default:
-			WRN("wrong index: %d", type_index);
+			WARN("wrong index: %d", type_index);
 	}
 
 	_dumpNode(nodeList);
@@ -1529,7 +1468,7 @@ static void cleanup_tag_list(Eina_List *nodeList)
 	eina_list_free(nodeList);
 }
 
-static char* html_to_efl(AppData *ad, int type_index, const char *str)
+static char* __convert_html_to_efl(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
 	FN_CALL();
 	Eina_List *nodeList = NULL;
@@ -1541,7 +1480,7 @@ static char* html_to_efl(AppData *ad, int type_index, const char *str)
 	return ret;
 }
 
-static char* efl_to_html(AppData *ad, int type_index, const char *str)
+static char* __convert_efl_to_html(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
 	FN_CALL();
 	Eina_List *nodeList = NULL;
@@ -1553,36 +1492,34 @@ static char* efl_to_html(AppData *ad, int type_index, const char *str)
 	return ret;
 }
 
-static char* text_to_html(AppData *ad, int type_index, const char *str)
+static char* __convert_text_to_html(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	char *markup = NULL;
 	markup = (char*)evas_textblock_text_utf8_to_markup(NULL, str);
-	char *html = efl_to_html(ad, ATOM_INDEX_EFL, markup);
+	char *html = __convert_efl_to_html(ad, ATOM_INDEX_EFL, markup);
 	FREE(markup);
 	return html;
 }
 
-static char* text_to_efl(AppData *ad, int type_index, const char *str)
+static char* __convert_text_to_efl(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	char *ret = NULL;
-	char *emoticon_text = entry_convert_emoticon_to_normal_text(str);
+	char *emoticon_text = __convert_entry_emoticon_to_normal_text(str);
 	ret = (char*)evas_textblock_text_utf8_to_markup(NULL, emoticon_text);
 	FREE(emoticon_text);
 	return ret;
 }
 
-static char* to_text(AppData *ad, int type_index, const char *str)
+static char* __convert_to_text(cbhmd_app_data_s *ad, int type_index, const char *str)
 {
-	DBG("str: %s", str);
+	DBG("str(%s)", str);
 	char *entry_text = NULL;
 
-	if (type_index == ATOM_INDEX_HTML)
-	{
+	if (type_index == ATOM_INDEX_HTML) {
 		Eina_Strbuf *buf = eina_strbuf_new();
-		if (buf)
-		{
+		if (buf) {
 			char *html;
 			eina_strbuf_append(buf, str);
 			eina_strbuf_replace_all(buf, "&nbsp;", " ");
@@ -1594,16 +1531,95 @@ static char* to_text(AppData *ad, int type_index, const char *str)
 		}
 	}
 
-	char *emoticon_text = entry_convert_emoticon_to_normal_text(str);
-	if (emoticon_text)
-	{
+	char *emoticon_text = __convert_entry_emoticon_to_normal_text(str);
+	if (emoticon_text) {
 		char *tmp;
-		tmp = markup_to_entry(ad, type_index, emoticon_text);
+		tmp = __convert_markup_to_entry(ad, type_index, emoticon_text);
 		entry_text = evas_textblock_text_markup_to_utf8(NULL, tmp);
 		free(tmp);
-		if (entry_text) strcat(entry_text, "\0");
+		if (entry_text)
+			strcat(entry_text, "\0");
 		FREE(emoticon_text);
 	}
 	return entry_text;
 }
 
+void cbhmd_convert_target_atoms_init(cbhmd_app_data_s *ad)
+{
+	int i, j;
+
+	int atom_cnt[ATOM_INDEX_MAX] = {
+		1, 5, 2, 1, 2, 1
+	};
+
+	char *targetAtomNames[][5] = {
+		{ "TARGETS" },
+		{ "UTF8_STRING", "STRING", "TEXT", "text/plain;charset=utf-8", "text/plain" },
+		{ "text/html;charset=utf-8", "text/html" },
+		{ "application/x-elementary-markup" },
+		{ "text/uri", "text/uri-list" },
+		{ "polaris-markup" }
+	};
+
+	text_converter_func converts_to_entry[ATOM_INDEX_MAX] = {
+		NULL,
+		__convert_text_to_entry_cb,
+		__convert_html_to_entry_cb,
+		__convert_efl_to_entry_cb,
+		__convert_image_path_to_entry_cb,
+		__convert_polaris_to_entry_cb
+	};
+
+	text_converter_func converts[ATOM_INDEX_MAX][ATOM_INDEX_MAX] = {
+		{NULL, NULL, NULL, NULL, NULL, NULL},
+		{NULL, __convert_do_not_convert, __convert_text_to_html, __convert_text_to_efl, NULL, NULL},
+		{NULL, __convert_to_text, __convert_do_not_convert, __convert_html_to_efl, __convert_html_to_image_path, NULL},
+		{NULL, __convert_to_text, __convert_efl_to_html, __convert_do_not_convert, __convert_do_not_convert, NULL},
+		{NULL, NULL, __convert_image_path_to_html, __convert_image_path_to_efl, __convert_image_path_to_image_path, NULL},
+		{NULL, __convert_to_text, NULL, NULL, NULL, __convert_do_not_convert}
+	};
+
+	for (i = 0; i < ATOM_INDEX_MAX; i++) {
+		ad->targetAtoms[i].atom_cnt = atom_cnt[i];
+		ad->targetAtoms[i].name = MALLOC(sizeof(char *) * atom_cnt[i]);
+#ifdef HAVE_X11
+		ad->targetAtoms[i].atom = MALLOC(sizeof(Ecore_X_Atom) * atom_cnt[i]);
+#else
+		ad->targetAtoms[i].atom = MALLOC(sizeof(int) * atom_cnt[i]);
+#endif
+		for (j = 0; j < atom_cnt[i]; j++) {
+			DBG("atomName(%s)", targetAtomNames[i][j]);
+			ad->targetAtoms[i].name[j] = SAFE_STRDUP(targetAtomNames[i][j]);
+#ifdef HAVE_X11
+			ad->targetAtoms[i].atom[j] = ecore_x_atom_get(targetAtomNames[i][j]);
+#endif
+		}
+
+		ad->targetAtoms[i].convert_to_entry = converts_to_entry[i];
+
+		for (j = 0; j < ATOM_INDEX_MAX; j++)
+			ad->targetAtoms[i].convert_to_target[j] = converts[i][j];
+
+#ifdef HAVE_X11
+		ecore_x_selection_converter_atom_add(ad->targetAtoms[i].atom,
+				target_converters[i]);
+		ecore_x_selection_converter_atom_add(ad->targetAtoms[i].atom,
+				generic_converter);
+#endif
+	}
+}
+
+void cbhmd_convert_target_atoms_deinit(cbhmd_app_data_s *ad)
+{
+	int i, j;
+	for (i = 0; i < ATOM_INDEX_MAX; i++) {
+		for (j = 0; j < ad->targetAtoms[i].atom_cnt; j++) {
+			if (ad->targetAtoms[i].name[j])
+				FREE(ad->targetAtoms[i].name[j]);
+		}
+		if (ad->targetAtoms[i].name)
+			FREE(ad->targetAtoms[i].name);
+		if (ad->targetAtoms[i].atom)
+			FREE(ad->targetAtoms[i].atom);
+	}
+}

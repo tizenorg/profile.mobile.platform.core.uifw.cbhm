@@ -21,25 +21,26 @@
 #include <notification.h>
 
 #include "cbhmd_appdata.h"
-#include "cbhmd_clipdrawer.h"
-#include "cbhmd_converter.h"
+#include "cbhmd_convert.h"
+#include "cbhmd_drawer.h"
 #include "cbhmd_handler.h"
 #include "cbhmd_utils.h"
 
-static void show_notification(CNP_ITEM *item, const char *msg)
+static void show_notification(cbhmd_cnp_item_s *item, const char *msg)
 {
-	if (item && item->data && item->len > 0)
+	RET_IF(NULL == item);
+	RET_IF(NULL == item->data);
+
+	if (item->len > 0)
 		notification_status_message_post(msg);
 }
 
-static void item_free(CNP_ITEM *item, Eina_Bool storage)
+static void item_free(cbhmd_cnp_item_s *item, Eina_Bool storage)
 {
 	FN_CALL();
-	if (!item)
-	{
-		ERR("WRONG PARAMETER in %s", __func__);
-		return;
-	}
+
+	RET_IF(NULL == item);
+
 	// remove gengrid
 	if (item->ad)
 	{
@@ -62,26 +63,26 @@ static void item_free(CNP_ITEM *item, Eina_Bool storage)
 
 	if (item->ad)
 	{
-		if (item->ad->clip_selected_item == item)
-		item->ad->clip_selected_item = NULL;
+		if (item->ad->selected_item == item)
+		item->ad->selected_item = NULL;
 	}
 	FREE(item);
 }
 
-CNP_ITEM *item_add_by_CNP_ITEM(AppData *ad, CNP_ITEM *item, Eina_Bool storage, Eina_Bool show_msg)
+cbhmd_cnp_item_s *item_add_by_cbhmd_cnp_item(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item, Eina_Bool storage, Eina_Bool show_msg)
 {
 	if (!ad || !item)
 	{
 		ERR("WRONG PARAMETER in %s", __func__);
 		return NULL;
 	}
-	ClipdrawerData *cd = ad->clipdrawer;
-	if ((item_count_get(ad, ATOM_INDEX_COUNT_ALL) - cd->locked_item_count) == 0)
+	cbhmd_drawer_data_s *dd = ad->drawer;
+	if ((item_count_get(ad, ATOM_INDEX_COUNT_ALL) - dd->locked_item_count) == 0)
 	{
-		elm_object_signal_emit(cd->main_layout, "elm,state,enable,del", "elm");
-		elm_object_part_content_unset(cd->main_layout, "historyitems");
-		evas_object_hide(cd->noc_layout);
-		elm_object_part_content_set(cd->main_layout, "historyitems", cd->gengrid);
+		elm_object_signal_emit(dd->main_layout, "elm,state,enable,del", "elm");
+		elm_object_part_content_unset(dd->main_layout, "historyitems");
+		evas_object_hide(dd->noc_layout);
+		elm_object_part_content_set(dd->main_layout, "historyitems", dd->gengrid);
 	}
 
 	if (!item)
@@ -101,7 +102,7 @@ CNP_ITEM *item_add_by_CNP_ITEM(AppData *ad, CNP_ITEM *item, Eina_Bool storage, E
 
 	while (ITEM_CNT_MAX < eina_list_count(ad->item_list))
 	{
-		CNP_ITEM *ditem = eina_list_nth(ad->item_list, ITEM_CNT_MAX);
+		cbhmd_cnp_item_s *ditem = eina_list_nth(ad->item_list, ITEM_CNT_MAX);
 
 		ad->item_list = eina_list_remove(ad->item_list, ditem);
 		item_free(ditem, EINA_TRUE);
@@ -109,7 +110,7 @@ CNP_ITEM *item_add_by_CNP_ITEM(AppData *ad, CNP_ITEM *item, Eina_Bool storage, E
 
 #ifdef HAVE_X11
 	slot_property_set(ad, -1);
-	slot_item_count_set(ad);
+	cbhmd_x_handler_slot_item_count_set(ad);
 #endif
 	if (show_msg)
 	{
@@ -124,7 +125,7 @@ CNP_ITEM *item_add_by_CNP_ITEM(AppData *ad, CNP_ITEM *item, Eina_Bool storage, E
 
 static void downloaded_cb(void *data, const char *file_, int status)
 {
-	CNP_ITEM *item = data;
+	cbhmd_cnp_item_s *item = data;
 
 	if (status == 200)
 	{
@@ -207,7 +208,7 @@ char* html_img_save_frm_local(char *copied_path)
 	return copied_path;
 }
 
-char* html_img_save(char *copied_path, CNP_ITEM *item)
+char* html_img_save(char *copied_path, cbhmd_cnp_item_s *item)
 {
 	char *html_img_url = NULL;
 	char html_img_name[PATH_MAX];
@@ -245,10 +246,10 @@ char* html_img_save(char *copied_path, CNP_ITEM *item)
 }
 
 #ifdef HAVE_X11
-CNP_ITEM *item_add_by_data(AppData *ad, Ecore_X_Atom type, void *data, int len,
+cbhmd_cnp_item_s *item_add_by_data(cbhmd_app_data_s *ad, Ecore_X_Atom type, void *data, int len,
 		Eina_Bool show_msg)
 #else
-CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len,
+cbhmd_cnp_item_s *item_add_by_data(cbhmd_app_data_s *ad, int type, void *data, int len,
 		Eina_Bool show_msg)
 #endif
 {
@@ -262,8 +263,8 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len,
 		ERR("WRONG PARAMETER in %s", __func__);
 		return NULL;
 	}
-	CNP_ITEM *item;
-	item = CALLOC(1, sizeof(CNP_ITEM));
+	cbhmd_cnp_item_s *item;
+	item = CALLOC(1, sizeof(cbhmd_cnp_item_s));
 
 	if (!item)
 		return NULL;
@@ -278,19 +279,19 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len,
 	if (item->type_index == ATOM_INDEX_TEXT)
 		item->gitem_style = GRID_ITEM_STYLE_TEXT;
 	else if (item->type_index == ATOM_INDEX_HTML) {
-		copied_path = string_for_image_path_get(ad, ATOM_INDEX_HTML, data);
+		copied_path = cbhmd_convert_get_image_path_string(ad, ATOM_INDEX_HTML, data);
 		DBG("found img path in html tags = %s\n", copied_path);
 
-		if (copied_path && ad->clipdrawer->http_path)
+		if (copied_path && ad->drawer->http_path)
 			copied_path = html_img_save(copied_path, item);
 		else if (copied_path)
 			copied_path = html_img_save_frm_local(copied_path);
 
-		entry_text = string_for_entry_get(ad, ATOM_INDEX_HTML, data);
+		entry_text = cbhmd_convert_get_entry_string(ad, ATOM_INDEX_HTML, data);
 		DBG("entry_text = %s\n copied_path = %s\n", entry_text, copied_path);
 	} else if (item->type_index == ATOM_INDEX_EFL) {
-		entry_text = string_for_entry_get(ad, ATOM_INDEX_EFL, data);
-		copied_path = string_for_image_path_get(ad, ATOM_INDEX_EFL, data);
+		entry_text = cbhmd_convert_get_entry_string(ad, ATOM_INDEX_EFL, data);
+		copied_path = cbhmd_convert_get_image_path_string(ad, ATOM_INDEX_EFL, data);
 		if (copied_path)
 			item->img_from_markup = EINA_TRUE;
 	} else if (item->type_index == ATOM_INDEX_IMAGE) {
@@ -328,7 +329,7 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len,
 	item->data = data;
 	item->len = len;
 
-	item = item_add_by_CNP_ITEM(ad, item, EINA_TRUE, show_msg);
+	item = item_add_by_cbhmd_cnp_item(ad, item, EINA_TRUE, show_msg);
 
 	if ((item->type_index == ATOM_INDEX_IMAGE) && orig_path && copied_path) {
 		if (!ecore_file_cp(orig_path, copied_path))
@@ -339,21 +340,21 @@ CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len,
 	return item;
 }
 
-CNP_ITEM *item_get_by_index(AppData *ad, int index)
+cbhmd_cnp_item_s *item_get_by_index(cbhmd_app_data_s *ad, int index)
 {
 	if (!ad || eina_list_count(ad->item_list) <= index || 0 > index)
 	{
 		ERR("WRONG PARAMETER in %s", __func__);
 		return NULL;
 	}
-	CNP_ITEM *item;
+	cbhmd_cnp_item_s *item;
 	item = eina_list_nth(ad->item_list, index);
 	return item;
 }
 
-CNP_ITEM *item_get_by_data(AppData *ad, void *data, int len)
+cbhmd_cnp_item_s *item_get_by_data(cbhmd_app_data_s *ad, void *data, int len)
 {
-	CNP_ITEM *item;
+	cbhmd_cnp_item_s *item;
 	Eina_List *l;
 
 	if (!ad || !data)
@@ -371,7 +372,7 @@ CNP_ITEM *item_get_by_data(AppData *ad, void *data, int len)
 	return NULL;
 }
 
-CNP_ITEM *item_get_last(AppData *ad)
+cbhmd_cnp_item_s *item_get_last(cbhmd_app_data_s *ad)
 {
 	if (!ad)
 	{
@@ -381,7 +382,7 @@ CNP_ITEM *item_get_last(AppData *ad)
 	return eina_list_data_get(ad->item_list);
 }
 
-void item_delete_by_CNP_ITEM(AppData *ad, CNP_ITEM *item)
+void item_delete_by_cbhmd_cnp_item(cbhmd_app_data_s *ad, cbhmd_cnp_item_s *item)
 {
 	FN_CALL();
 
@@ -393,15 +394,15 @@ void item_delete_by_CNP_ITEM(AppData *ad, CNP_ITEM *item)
 	item_free(item, EINA_TRUE);
 #ifdef HAVE_X11
 	slot_property_set(ad, -1);
-	slot_item_count_set(ad);
+	cbhmd_x_handler_slot_item_count_set(ad);
 #endif
 	if (item_count_get(ad, ATOM_INDEX_COUNT_ALL) == 0) {
-		_delete_mode_set(ad, EINA_FALSE);
-		clipdrawer_lower_view(ad);
+		cbhmd_drawer_delete_mode_set(ad, EINA_FALSE);
+		cbhmd_drawer_hide(ad);
 	}
 }
 
-void item_delete_by_data(AppData *ad, void *data, int len)
+void item_delete_by_data(cbhmd_app_data_s *ad, void *data, int len)
 {
 	FN_CALL();
 	if (!ad || !data)
@@ -409,12 +410,12 @@ void item_delete_by_data(AppData *ad, void *data, int len)
 		ERR("WRONG PARAMETER in %s", __func__);
 		return;
 	}
-	CNP_ITEM *item;
+	cbhmd_cnp_item_s *item;
 	item = item_get_by_data(ad, data, len);
-	item_delete_by_CNP_ITEM(ad, item);
+	item_delete_by_cbhmd_cnp_item(ad, item);
 }
 
-void item_delete_by_index(AppData *ad, int index)
+void item_delete_by_index(cbhmd_app_data_s *ad, int index)
 {
 	FN_CALL();
 	if (!ad || eina_list_count(ad->item_list) <= index || 0 > index)
@@ -422,28 +423,28 @@ void item_delete_by_index(AppData *ad, int index)
 		ERR("WRONG PARAMETER in %s", __func__);
 		return;
 	}
-	CNP_ITEM *item;
+	cbhmd_cnp_item_s *item;
 	item = item_get_by_index(ad, index);
-	item_delete_by_CNP_ITEM(ad, item);
+	item_delete_by_cbhmd_cnp_item(ad, item);
 }
 
-void item_clear_all(AppData *ad)
+void item_clear_all(cbhmd_app_data_s *ad)
 {
 	FN_CALL();
 	while(ad->item_list)
 	{
-		CNP_ITEM *item = eina_list_data_get(ad->item_list);
+		cbhmd_cnp_item_s *item = eina_list_data_get(ad->item_list);
 		ad->item_list = eina_list_remove(ad->item_list, item);
 		if (item)
 			item_free(item, EINA_FALSE);
 	}
 }
 
-int item_count_get(AppData *ad, int atom_index)
+int item_count_get(cbhmd_app_data_s *ad, int atom_index)
 {
 	int icount = 0;
 	Eina_List *l;
-	CNP_ITEM *item;
+	cbhmd_cnp_item_s *item;
 
 	if (!ad || !ad->item_list) return 0;
 

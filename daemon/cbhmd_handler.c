@@ -15,22 +15,27 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__
-
-#include <Ecore.h>
-#include <Ecore_Wayland.h>
-
-#include "cbhmd.h"
+#include "cbhm_log.h"
 #include "cbhmd_appdata.h"
+#include "cbhmd_handler.h"
 
-typedef struct _WlHandlerData {
-	Ecore_Event_Handler *wl_offer_handler;
-	Ecore_Event_Handler *wl_send_handler;
-	Ecore_Event_Handler *wl_receive_handler;
-} WlHandlerData;
+int cbhmd_handler_init(cbhmd_app_data_s *ad)
+{
+	int ret;
+#ifdef HAVE_X11
+	ret = cbhmd_x_handler_init(ad);
+	if (CBHM_ERROR_NONE != ret) {
+		ERR("cbhmd_x_handler_init() Fail(%d", ret);
+		return ret;
+	}
+#endif
+#ifdef HAVE_WAYLAND
+	ret = cbhmd_wl_handler_init(ad);
+	if (CBHM_ERROR_NONE != ret) {
+		ERR("cbhmd_wl_handler_init() Fail(%d", ret);
+		return ret;
+	}
+#endif
 
-WlHandlerData *init_wlhandler(AppData *data);
-void depose_wlhandler(WlHandlerData *wld);
-
-#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER_WAYLAND__ */
+	return CBHM_ERROR_NONE;
+}
