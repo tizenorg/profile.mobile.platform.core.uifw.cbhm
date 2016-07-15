@@ -15,14 +15,14 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM_MANAGER__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM_MANAGER__
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM__
 
 #include <vconf.h>
 #include <vconf-internal-keys.h>
 
 #include "cbhmd.h"
-#include "cbhmd_appdata.h"
+#include "cbhmd_app_data.h"
 
 #define MULTI_(s) dgettext(PACKAGE, s)
 /* FIXME : couldn't load languages from po files */
@@ -38,7 +38,6 @@
 //#define S_CLIPBOARD_OPTION MULTI_("IDS_COM_HEADER_CLIPBOARD_OPTIONS")
 //#define S_DELETE_Q MULTI_("IDS_IME_HEADER_DELETE_ALL_ITEMS_ABB")
 //#define S_NO_ITEMS MULTI_("IDS_GALLERY_NPBODY_NO_ITEMS")
-
 #define S_CLIPBOARD "Clipboard"
 #define S_DELETE "Delete"
 #define S_DONE "Done"
@@ -52,43 +51,43 @@
 #define S_DELETE_Q "Delete all items"
 #define S_NO_ITEMS "No items"
 
-enum GRID_ITEM_STYLE {
-	GRID_ITEM_STYLE_TEXT = 0,
-	GRID_ITEM_STYLE_IMAGE = 1,
-	GRID_ITEM_STYLE_COMBINED = 2,
-	GRID_ITEM_STYLE_MAX = 3
+enum GRID_ITEM_STYLE
+{
+   GRID_ITEM_STYLE_TEXT = 0,
+   GRID_ITEM_STYLE_IMAGE = 1,
+   GRID_ITEM_STYLE_COMBINED = 2,
+   GRID_ITEM_STYLE_MAX = 3
 };
 
-struct _CNP_ITEM {
-	int type_index;
-	void *data;
-	size_t len;
-	void *file;
-	size_t file_len;
-	int gitem_style;
-	Eina_Bool img_from_web;
-	Eina_Bool img_from_markup;
-	Elm_Object_Item *gitem;
-	Eina_Bool locked;
-	AppData *ad;
+struct _Cbhmd_Cnp_Item
+{
+   int type_index;
+   void *data;
+   size_t len;
+   void *file;
+   size_t file_len;
+   int gitem_style;
+   Eina_Bool img_from_web;
+   Eina_Bool img_from_markup;
+   Elm_Object_Item *gitem;
+   Eina_Bool locked;
+   Cbhmd_App_Data *ad;
 };
 
-CNP_ITEM *item_add_by_CNP_ITEM(AppData *ad, CNP_ITEM *item, Eina_Bool storage, Eina_Bool show_msg);
+Cbhmd_Cnp_Item *cbhmd_item_add_by_cnp_item(Cbhmd_App_Data *ad, Cbhmd_Cnp_Item *item, Eina_Bool storage, Eina_Bool show_msg);
 #ifdef HAVE_X11
-CNP_ITEM *item_add_by_data(AppData *ad, Ecore_X_Atom type, void *data, int len, Eina_Bool show_msg);
+Cbhmd_Cnp_Item *cbhmd_item_add_by_data(Cbhmd_App_Data *ad, Ecore_X_Atom type, void *data, int len, Eina_Bool show_msg);
 #else
-CNP_ITEM *item_add_by_data(AppData *ad, int type, void *data, int len, Eina_Bool show_msg);
+Cbhmd_Cnp_Item *cbhmd_item_add_by_data(Cbhmd_App_Data *ad, int type, void *data, int len, Eina_Bool show_msg);
 #endif
 
-CNP_ITEM *item_get_by_index(AppData *ad, int index);
-CNP_ITEM *item_get_by_data(AppData *ad, void *data, int len);
-CNP_ITEM *item_get_last(AppData *ad);
+Cbhmd_Cnp_Item *cbhmd_item_get_by_index(Cbhmd_App_Data *ad, int index);
+Cbhmd_Cnp_Item *cbhmd_item_get_last(Cbhmd_App_Data *ad);
 
-void item_delete_by_CNP_ITEM(AppData *ad, CNP_ITEM *item);
-void item_delete_by_data(AppData *ad, void *data, int len);
-void item_delete_by_index(AppData *ad, int index);
-void item_clear_all(AppData *ad);
-int item_count_get(AppData *ad, int atom_index);
+void cbhmd_item_delete_by_cnp_item(Cbhmd_App_Data *ad, Cbhmd_Cnp_Item *item);
+void cbhmd_item_delete_by_index(Cbhmd_App_Data *ad, int index);
+void cbhmd_item_clear_all(Cbhmd_App_Data *ad);
+int cbhmd_item_count_get(Cbhmd_App_Data *ad, int atom_index);
 
-#endif /*__CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM_MANAGER__*/
+#endif /*__CLIPBOARD_HISTORY_MANAGER_DAEMON_ITEM__*/
 

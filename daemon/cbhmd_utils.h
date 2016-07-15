@@ -20,15 +20,15 @@
 
 #include "cbhmd.h"
 
-void* d_malloc(const char *func, int line, size_t size);
-void* d_calloc(const char *func, int line, size_t n, size_t size);
-void d_free(const char *func, int line, void *m);
+void* cbhm_utils_malloc(const char *func, int line, size_t size);
+void* cbhm_utils_calloc(const char *func, int line, size_t n, size_t size);
+void cbhm_utils_free(const char *func, int line, void *m);
 
-#define MALLOC(size) d_malloc(__func__, __LINE__, size)
-#define CALLOC(n, size) d_calloc(__func__, __LINE__, n, size)
-#define FREE(p) d_free(__func__, __LINE__, p)
+#define MALLOC(size) cbhm_utils_malloc(__func__, __LINE__, size)
+#define CALLOC(n, size) cbhm_utils_calloc(__func__, __LINE__, n, size)
+#define FREE(p) cbhm_utils_free(__func__, __LINE__, p)
 
-// Define memory-safe string functions
+/* Define memory-safe string functions */
 #define SAFE_STRCMP(s1, s2) ((s1 && s2) ? strcmp(s1, s2) : (s1 ? 1 : -1))
 #define SAFE_STRNCMP(s1, s2, n) ((s1 && s2) ? strncmp(s1, s2, n) : (s1 ? 1 : -1))
 #define SAFE_STRDUP(s) (s ? strdup(s) : NULL)

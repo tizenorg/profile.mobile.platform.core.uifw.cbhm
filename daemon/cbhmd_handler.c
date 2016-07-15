@@ -15,11 +15,30 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__
+#include "cbhm_log.h"
+#include "cbhmd_app_data.h"
+#include "cbhmd_handler.h"
 
-#include "cbhmd_appdata.h"
+int
+cbhmd_handler_init(Cbhmd_App_Data *ad)
+{
+   int ret;
+#ifdef HAVE_X11
+   ret = cbhmd_x_handler_init(ad);
+   if (CBHM_ERROR_NONE != ret)
+     {
+        ERR("cbhmd_x_handler_init() Fail(%d", ret);
+        return ret;
+     }
+#endif
+#ifdef HAVE_WAYLAND
+   ret = cbhmd_wl_handler_init(ad);
+   if (CBHM_ERROR_NONE != ret)
+     {
+        ERR("cbhmd_wl_handler_init() Fail(%d", ret);
+        return ret;
+     }
+#endif
 
-char* wl_string_for_entry_get(AppData *ad, int type_index, const char *str);
-char* wl_string_for_image_path_get(AppData *ad, int type_index, const char *str);
-#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_WAYLAND_H__ */
+   return CBHM_ERROR_NONE;
+}

@@ -15,4 +15,12 @@
  *
  */
 
-#include "cbhmd_clipdrawer_x.h"
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_ELDBUS__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_ELDBUS__
+
+void cbhmd_eldbus_send_item_clicked_signal(void *data);
+
+int cbhmd_eldbus_init();
+void cbhmd_eldbus_deinit();
+
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_ELDBUS__ */
