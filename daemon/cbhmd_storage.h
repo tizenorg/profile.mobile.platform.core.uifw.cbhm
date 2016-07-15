@@ -23,17 +23,18 @@
 #include <Ecore.h>
 
 #include "cbhmd.h"
-#include "cbhmd_item_manager.h"
+#include "cbhmd_item.h"
 
 typedef double indexType; /* Ecore_Time */
 
-struct _StorageData {
-	Eet_File *ef;
-	indexType indexTable[ITEM_CNT_MAX];
-	CNP_ITEM *itemTable[ITEM_CNT_MAX];
+struct _Cbhmd_Storage_Data
+{
+   Eet_File *ef;
+   indexType indexTable[ITEM_CNT_MAX];
+   Cbhmd_Cnp_Item *itemTable[ITEM_CNT_MAX];
 };
 
-StorageData *init_storage(AppData *ad);
-void depose_storage(StorageData *sd);
+Cbhmd_Storage_Data* cbhmd_storage_init(Cbhmd_App_Data *ad);
+void cbhmd_storage_deinit(Cbhmd_Storage_Data *sd);
 
 #endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_STORAGE__ */

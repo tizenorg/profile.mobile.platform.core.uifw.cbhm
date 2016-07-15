@@ -40,6 +40,26 @@ Description: cbhm application
 %setup -q
 
 %build
+#%if 0%{?tizen_version_major} < 3
+#TZ_VER_3=0
+#%else
+#TZ_VER_3=1
+#%endif
+
+# sec_build_binary_debug_enable is not enabled now
+#%if 0%{?sec_build_binary_debug_enable}
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
+export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
+export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
+# sec_build_binary_debug_enable is not enabled now
+#%endif
+
+%if 0%{?tizen_build_binary_release_type_eng}
+export CFLAGS="${CFLAGS} -DTIZEN_ENGINEER_MODE"
+export CXXFLAGS="${CXXFLAGS} -DTIZEN_ENGINEER_MODE"
+export FFLAGS="${FFLAGS} -DTIZEN_ENGINEER_MODE"
+%endif
+
 %define _pkg_dir %{TZ_SYS_RO_APP}/org.tizen.%{name}
 %define _pkg_shared_dir %{_pkg_dir}/shared
 

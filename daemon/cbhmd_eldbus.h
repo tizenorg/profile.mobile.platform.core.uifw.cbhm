@@ -15,17 +15,12 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_ELDBUS__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_ELDBUS__
 
-#ifdef HAVE_X11
-#include "cbhmd_converter_x.h"
-#endif
-#ifdef HAVE_WAYLAND
-#include "cbhmd_converter_wl.h"
-#endif
+void cbhmd_eldbus_send_item_clicked_signal(void *data);
 
-char* string_for_entry_get(AppData *ad, int type_index, const char *str);
-char* string_for_image_path_get(AppData *ad, int type_index, const char *str);
+int cbhmd_eldbus_init();
+void cbhmd_eldbus_deinit();
 
-#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_CONVERTER_H__ */
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_ELDBUS__ */

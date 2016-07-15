@@ -15,34 +15,20 @@
  *
  */
 
-#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__
-#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__
+#ifndef __CLIPBOARD_HISTORY_MANAGER_DAEMON_WL_DRAWER_H__
+#define __CLIPBOARD_HISTORY_MANAGER_DAEMON_WL_DRAWER_H__
 
-#include "cbhmd.h"
+#include <Ecore_Wayland.h>
+
 #include "cbhmd_app_data.h"
 
-#ifdef HAVE_X11
-#include "cbhmd_handler_x.h"
-#endif
-#ifdef HAVE_WAYLAND
-#include "cbhmd_wl_handler.h"
-#endif
+void cbhmd_wl_drawer_focus_set(Ecore_Wl_Window *wl_main_win, Eina_Bool enable);
+int cbhmd_wl_drawer_effect_and_focus_set(Cbhmd_App_Data *ad);
+void cbhmd_wl_drawer_event_window_set_title(Ecore_Wl_Window *wl_event_win);
 
-typedef char* (*text_converter_func)(Cbhmd_App_Data *ad, int type_index, const char *str);
+void cbhmd_wl_drawer_set_transient(Ecore_Wl_Window *transient_win, Ecore_Wl_Window *toplevel_win);
+void cbhmd_wl_drawer_unset_transient(Ecore_Wl_Window *wl_main_win);
 
-struct _Cbhmd_Handler_Target
-{
-#ifdef HAVE_X11
-   Ecore_X_Atom *atom;
-#else
-   unsigned int *atom;
-#endif
-   char **name;
-   int atom_cnt;
-   text_converter_func convert_to_entry;
-   text_converter_func convert_to_target[ATOM_INDEX_MAX];
-};
+Ecore_Wl_Window* cbhmd_wl_drawer_isf_ise_window_get();
 
-int cbhmd_handler_init(Cbhmd_App_Data *ad);
-
-#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_HANDLER__ */
+#endif /* __CLIPBOARD_HISTORY_MANAGER_DAEMON_WL_DRAWER_H__ */
