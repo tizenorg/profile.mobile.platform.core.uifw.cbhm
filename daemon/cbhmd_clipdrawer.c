@@ -591,7 +591,7 @@ static char *_grid_text_get(void *data, Evas_Object *obj, const char *part)
 		if (entry_text)
 		{
 			SAFE_STRNCPY(text_to_show, entry_text, (BUFF - 1));
-			strcat(text_to_show, "\0");
+			SAFE_STRNCAT(text_to_show, "\0", 1);
 		}
 
 		if (entry_text)
@@ -764,7 +764,7 @@ static Evas_Object *_grid_combined_content_get(void *data, Evas_Object *obj, con
 		{
 			entry_text = evas_textblock_text_markup_to_utf8(NULL, entry_text);
 			if (entry_text)
-			  strcat(entry_text, "\0");
+				SAFE_STRNCAT(entry_text, "\0", 1);
 		}
 
 		if (cd->paste_text_only && entry_text && !strlen(entry_text))

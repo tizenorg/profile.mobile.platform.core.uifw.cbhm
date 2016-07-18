@@ -154,30 +154,30 @@ static Eina_Bool get_network_state()
 	return EINA_TRUE;
 }
 
-static void image_name_get(char *filename)
+static void image_name_get(char *filename, int size)
 {
 	time_t tim;
 	struct tm *now;
 
 	//file path get
 	tim = time(NULL);
-	now = localtime(&tim);
+	localtime_r(&tim, &now);
 
 	if (now)
 	{
-		sprintf(filename, "fromweb-%d%02d%02d%02d%02d%02d%s",
+		snprintf(filename, size, "fromweb-%d%02d%02d%02d%02d%02d%s",
 				  now->tm_year + 1900, now->tm_mon + 1, now->tm_mday,
 				  now->tm_hour, now->tm_min, now->tm_sec, ".jpg");
 	}
 	else //localtime returns NULL if some process hold this function
 	{
-		now = localtime(&tim);
+		localtime_r(&tim, &now);
 		if (now)
-		  sprintf(filename, "fromweb-%d%02d%02d%02d%02d%02d%s",
+		  snprintf(filename, size, "fromweb-%d%02d%02d%02d%02d%02d%s",
 					 now->tm_year + 1900, now->tm_mon + 1, now->tm_mday,
 					 now->tm_hour, now->tm_min, now->tm_sec, ".jpg");
 		else
-		  sprintf(filename, "fromweb-%d%02d%02d%02d%02d%02d%s",
+		  snprintf(filename, size, "fromweb-%d%02d%02d%02d%02d%02d%s",
 					 1900, 1, 1, 0, 0, 0,".jpg");
 	}
 }
@@ -193,7 +193,7 @@ char* html_img_save_frm_local(char *copied_path)
 	snprintf(html_img_url, size_path, "%s", copied_path);
 	DBG("html_img_url = %s\n", html_img_url);
 
-	image_name_get(html_img_name);
+	image_name_get(html_img_name, sizeof(html_img_name));
 	DBG("copied file name = %s\n", html_img_name);
 
 	size_path = snprintf(NULL, 0, "%s/%s", COPIED_DATA_STORAGE_DIR,
@@ -223,7 +223,7 @@ char* html_img_save(char *copied_path, CNP_ITEM *item)
 		snprintf(html_img_url, size_path, "http:/" "%s", copied_path);
 		DBG("html_img_url = %s\n", html_img_url);
 
-		image_name_get(html_img_name);
+		image_name_get(html_img_name, sizeof(html_img_name));
 		DBG("copied file name = %s\n", html_img_name);
 
 		size_path = snprintf(NULL, 0, "%s/%s", COPIED_DATA_STORAGE_DIR,
