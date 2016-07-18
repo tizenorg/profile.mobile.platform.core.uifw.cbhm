@@ -67,9 +67,6 @@ install -m 0644 %SOURCE2 %{buildroot}%{_unitdir_user}/%{name}.path
 ln -s ../%{name}.service %{buildroot}%{_unitdir_user}/default.target.wants/%{name}.service
 ln -s ../%{name}.path %{buildroot}%{_unitdir_user}/default.target.wants/%{name}.path
 
-mkdir -p %{buildroot}/%{_datadir}/license
-cp %{_builddir}/%{buildsubdir}/LICENSE %{buildroot}/%{_datadir}/license/%{name}
-
 %post
 echo "INFO: System should be restarted or execute: systemctl --user daemon-reload from user session to finish service installation."
 
@@ -85,5 +82,6 @@ echo "INFO: System should be restarted or execute: systemctl --user daemon-reloa
 %{_unitdir_user}/default.target.wants/%{name}.service
 %{_unitdir_user}/%{name}.path
 %{_unitdir_user}/default.target.wants/%{name}.path
-%{_datadir}/license/%{name}
 %manifest %{name}.manifest
+%license LICENSE.APLv2
+
