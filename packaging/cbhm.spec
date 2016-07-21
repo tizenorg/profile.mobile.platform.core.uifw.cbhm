@@ -2,10 +2,10 @@
 %bcond_with x
 
 Name:       cbhm
-Summary:    cbhm application
+Summary:    Clipboard History Manager
 Version:    0.1.235
 Release:    1
-Group:      Applications
+Group:      Graphics & UI Framework/Service
 License:    Apache-2.0
 URL:        http://www.samsung.com/
 Source0:    %{name}-%{version}.tar.gz
@@ -38,21 +38,14 @@ Description: cbhm application
 
 %prep
 %setup -q
+chmod g-w %{_sourcedir}/*
 
 %build
-#%if 0%{?tizen_version_major} < 3
-#TZ_VER_3=0
-#%else
-#TZ_VER_3=1
-#%endif
-
 # sec_build_binary_debug_enable is not enabled now
-#%if 0%{?sec_build_binary_debug_enable}
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 # sec_build_binary_debug_enable is not enabled now
-#%endif
 
 %if 0%{?tizen_build_binary_release_type_eng}
 export CFLAGS="${CFLAGS} -DTIZEN_ENGINEER_MODE"
@@ -96,7 +89,6 @@ echo "INFO: System should be restarted or execute: systemctl --user daemon-reloa
 %{_pkg_dir}/bin/*
 %{_pkg_dir}/res/edje/cbhmdrawer.edj
 %{_pkg_dir}/res/locale/*
-#%{_pkg_shared_dir}/*
 ## systemd
 %{_unitdir_user}/%{name}.service
 %{_unitdir_user}/default.target.wants/%{name}.service
