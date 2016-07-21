@@ -186,12 +186,13 @@ _lang_changed_cb(void *event_info, void *data)
 int
 main(int argc, char *argv[])
 {
+   int ret;
    Cbhmd_App_Data *ad;
 
    struct appcore_ops ops = {
         .create = app_create,
         .terminate = app_terminate,
-        .pause = app_pause, 
+        .pause = app_pause,
         .resume = app_resume,
         .reset = app_reset,
    };
@@ -200,10 +201,16 @@ main(int argc, char *argv[])
    ops.data = ad;
    cbhmd_ad = ad;
 
-   //appcore_set_i18n(PACKAGE, LOCALE_DIR);
-   appcore_set_event_callback(APPCORE_EVENT_LANG_CHANGE, _lang_changed_cb, NULL);
+   ret = appcore_set_event_callback(APPCORE_EVENT_LANG_CHANGE, _lang_changed_cb, NULL);
+   if (ret < 0)
+     ERR("Failed to excute the change of language");
 
-   // Notyfication to systemd
+   /* init internationalization */
+   ret = appcore_set_i18n(PACKAGE, LOCALE_DIR);
+   if (ret < 0)
+      ERR("appcore_set_i18n() Fail(%d)", ret);
+
+   /* Notyfication to systemd */
    sd_notify(1, "READY=1");
 
    return appcore_efl_main(PACKAGE, &argc, &argv, &ops);

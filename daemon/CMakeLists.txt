@@ -1,9 +1,5 @@
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/res)
 
-SET(PREFIX "${CMAKE_INSTALL_PREFIX}")
-SET(RES_DIR "${PREFIX}/res")
-SET(LOCALE_DIR "${RES_DIR}/locale")
-SET(SHARED_DIR "${PREFIX}/shared")
 SET(VERSION 0.1.0)
 
 SET(DAEMON_SRCS cbhmd.c
@@ -11,7 +7,7 @@ SET(DAEMON_SRCS cbhmd.c
 	cbhmd_drawer.c
 	cbhmd_handler.c
 	cbhmd_item.c
-	cbhmd_eldbus.c	
+	cbhmd_eldbus.c
 	cbhmd_storage.c
 	cbhmd_utils.c
 
@@ -107,8 +103,6 @@ ADD_CUSTOM_TARGET(cbhmdrawer.edj
 	   DEPENDS ${CMAKE_SOURCE_DIR}/res/edje/cbhmdrawer.edc
 )
 ADD_DEPENDENCIES(${DAEMON} cbhmdrawer.edj)
- 
+
 INSTALL(TARGETS ${DAEMON} DESTINATION ${PREFIX}/bin)
 INSTALL(FILES ${CMAKE_BINARY_DIR}/res/edje/cbhmdrawer.edj DESTINATION ${RES_DIR}/edje)
-ADD_SUBDIRECTORY(po)
-
