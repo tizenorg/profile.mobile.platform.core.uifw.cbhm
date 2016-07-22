@@ -120,6 +120,9 @@ app_create(void *data)
    set_selection_owner(ad, ECORE_X_SELECTION_CLIPBOARD, NULL);
 #endif
 
+   elm_cache_all_flush();
+   appcore_flush_memory();
+
    return 0;
 }
 
