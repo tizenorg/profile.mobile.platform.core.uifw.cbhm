@@ -263,7 +263,7 @@ cbhmd_item_add_by_data(Cbhmd_App_Data *ad, int type, void *data,
    item->type_index = atom_type_index_get(ad, type);
 #else
    /* FIXME : Could handle various MIME types later */
-   item->type_index = ATOM_INDEX_TEXT;
+   item->type_index = type;
 #endif
 
    if (item->type_index == ATOM_INDEX_TEXT)

@@ -25,8 +25,19 @@ cbhmd_wl_drawer_focus_set(Ecore_Wl_Window *wl_main_win, Eina_Bool enable)
 }
 
 int
-cbhmd_wl_drawer_effect_and_focus_set(Cbhmd_App_Data *ad)
+cbhmd_wl_drawer_effect_and_focus_set(Cbhmd_App_Data *ad, Cbhmd_Drawer_Data *dd)
 {
+   RETV_IF(NULL == ad, CBHM_ERROR_INVALID_PARAMETER);
+   RETV_IF(NULL == dd, CBHM_ERROR_INVALID_PARAMETER);
+   RETV_IF(NULL == dd->main_win, CBHM_ERROR_INVALID_PARAMETER);
+
+   /* disable main window effect */
+   if (-1 == elm_win_aux_hint_add(dd->main_win, "wm.policy.win.effect.disable", "1"))
+     {
+        ERR("elm_win_aux_hint_add() Fail");
+        return CBHM_ERROR_NOT_SUPPORTED;
+     }
+
    cbhmd_drawer_focus_set(ad, EINA_FALSE);
    ecore_wl_flush();
 

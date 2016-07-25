@@ -23,7 +23,7 @@
 #include "cbhmd_app_data.h"
 
 void cbhmd_x_drawer_focus_set(Ecore_X_Window x_main_win, Eina_Bool enable);
-int cbhmd_x_drawer_effect_and_focus_set(Cbhmd_App_Data *ad);
+int cbhmd_x_drawer_effect_and_focus_set(Cbhmd_App_Data *ad, Cbhmd_Drawer_Data *dd);
 
 void cbhmd_x_drawer_set_transient(Ecore_X_Window transient_win, Ecore_X_Window toplevel_win);
 void cbhmd_x_drawer_unset_transient(Ecore_X_Window x_main_win);

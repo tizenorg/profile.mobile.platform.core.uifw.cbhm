@@ -40,16 +40,15 @@ cbhmd_x_drawer_focus_set(Ecore_X_Window x_main_win, Eina_Bool enable)
 }
 
 int
-cbhmd_x_drawer_effect_and_focus_set(Cbhmd_App_Data *ad)
+cbhmd_x_drawer_effect_and_focus_set(Cbhmd_App_Data *ad, Cbhmd_Drawer_Data *dd)
 {
    FN_CALL();
 
    RETV_IF(NULL == ad, CBHM_ERROR_INVALID_PARAMETER);
    RETV_IF(NULL == ad->x_root_win, CBHM_ERROR_INVALID_PARAMETER);
-   RETV_IF(NULL == ad->drawer, CBHM_ERROR_INVALID_PARAMETER);
-   RETV_IF(NULL == ad->drawer->x_main_win, CBHM_ERROR_INVALID_PARAMETER);
+   RETV_IF(NULL == dd, CBHM_ERROR_INVALID_PARAMETER);
+   RETV_IF(NULL == dd->x_main_win, CBHM_ERROR_INVALID_PARAMETER);
 
-   Cbhmd_Drawer_Data *dd = ad->drawer;
    Ecore_X_Window x_root_win = ad->x_root_win;
    Ecore_X_Window x_main_win = dd->x_main_win;
 

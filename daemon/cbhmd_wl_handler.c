@@ -174,12 +174,10 @@ _wl_handler_selection_receive(void *udata, int type EINA_UNUSED,
      }
 
    stripstr = SAFE_STRNDUP((char * )ev->data, ev->len);
-   DBG(
-      "== [ TRANSACTION-RECV ] ====>> data(%s), len(%d)", stripstr,
-      SAFE_STRLEN(stripstr));
+   DBG("== [ TRANSACTION-RECV ] ====>> data(%s), len(%d)", stripstr, SAFE_STRLEN(stripstr));
 
    /* FIXME : Could handle various MIME types later */
-   cbhmd_item_add_by_data(ad, 0, stripstr, SAFE_STRLEN(stripstr) + 1, EINA_TRUE);
+   cbhmd_item_add_by_data(ad, ATOM_INDEX_TEXT, stripstr, SAFE_STRLEN(stripstr) + 1, EINA_TRUE);
 
    types[++i] = "application/x-elementary-markup";
    if (!ecore_wl_dnd_selection_set(input, types))

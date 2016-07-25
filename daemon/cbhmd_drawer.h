@@ -50,7 +50,6 @@ struct _Cbhmd_Drawer_Data
    Elm_Gengrid_Item_Class gic_text;
    Elm_Gengrid_Item_Class gic_image;
    Elm_Gengrid_Item_Class gic_combined;
-   Evas_Object *popup;
    Evas_Object *popup_win;
    Evas_Object *popup_conform;
    Evas_Object *cbhm_popup;

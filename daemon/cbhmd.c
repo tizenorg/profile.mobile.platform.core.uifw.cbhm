@@ -103,6 +103,12 @@ app_create(void *data)
 
    if (!(ad->drawer = cbhmd_drawer_init(ad))) return EXIT_FAILURE;
 
+   if (!(ad->drawer->main_win))
+     {
+        ERR("drawer->main_win is NULL");
+        return EXIT_FAILURE;
+     }
+
    /* to be identified by E20 */
    elm_win_role_set(ad->drawer->main_win, "cbhm");
 

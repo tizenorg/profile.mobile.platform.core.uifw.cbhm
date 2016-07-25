@@ -322,7 +322,7 @@ _drawer_title_delete_all_btn_access_activate_cb(void *data,
 }
 
 static int
-_cbhmd_drawer_effect_and_focus_set(Cbhmd_App_Data *ad)
+_cbhmd_drawer_effect_and_focus_set(Cbhmd_App_Data *ad, Cbhmd_Drawer_Data *dd)
 {
    FN_CALL();
    int ret;
@@ -330,7 +330,7 @@ _cbhmd_drawer_effect_and_focus_set(Cbhmd_App_Data *ad)
    RETV_IF(NULL == ad, CBHM_ERROR_INVALID_PARAMETER);
 
 #ifdef HAVE_X11
-   ret = cbhmd_x_drawer_effect_and_focus_set(ad);
+   ret = cbhmd_x_drawer_effect_and_focus_set(ad, dd);
    if (CBHM_ERROR_NONE != ret)
      {
         ERR("cbhmd_x_drawer_effect_and_focus_set() Fail(%d)", ret);
@@ -338,7 +338,7 @@ _cbhmd_drawer_effect_and_focus_set(Cbhmd_App_Data *ad)
      }
 #endif
 #ifdef HAVE_WAYLAND
-   ret = cbhmd_wl_drawer_effect_and_focus_set(ad);
+   ret = cbhmd_wl_drawer_effect_and_focus_set(ad, dd);
    if (CBHM_ERROR_NONE != ret)
      {
         ERR("cbhmd_wl_drawer_effect_and_focus_set() Fail(%d)", ret);
@@ -729,6 +729,13 @@ _cbhmd_drawer_popup_create(Cbhmd_App_Data *ad)
      {
         ERR("elm_win_add() Fail");
         return CBHM_ERROR_NO_DATA;
+     }
+
+   /* disable popup window effect */
+   if (-1 == elm_win_aux_hint_add(dd->popup_win, "wm.policy.win.effect.disable", "1"))
+     {
+        ERR("elm_win_aux_hint_add() Fail");
+        return CBHM_ERROR_NOT_SUPPORTED;
      }
 
 #ifdef HAVE_X11
@@ -1477,7 +1484,7 @@ cbhmd_drawer_init(Cbhmd_App_Data *ad)
      }
 #endif
 
-   ret = _cbhmd_drawer_effect_and_focus_set(ad);
+   ret = _cbhmd_drawer_effect_and_focus_set(ad, dd);
    if (CBHM_ERROR_NONE != ret)
      {
         ERR("_cbhmd_drawer_effect_and_focus_set() Fail");
