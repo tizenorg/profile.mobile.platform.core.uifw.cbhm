@@ -363,6 +363,8 @@ _drawer_item_add(Cbhmd_App_Data *ad, Cbhmd_Cnp_Item *item)
 
    EINA_LIST_FOREACH_SAFE(itemlist, l, l_next, gitem_data)
      {
+        if (!gitem_data || !gitem_data->data)
+          continue;
         if ((gitem_data->type_index == item->type_index)
             && (!SAFE_STRCMP(item->data, gitem_data->data)))
           {

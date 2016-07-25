@@ -564,7 +564,7 @@ _link_match_tags(Eina_List *nodes)
 
         tagName[0] = '/';
         tagName[1] = '\0';
-        SAFE_STRCAT(tagName, popData->tag);
+        SAFE_STRNCAT(tagName, popData->tag, tagLength);
 
         newData = _new_tag_node(tagName, NULL, NULL, NULL);
         popData->tagPosType = TAGPOS_START;
@@ -655,6 +655,7 @@ _set_EFL_item_data(PItemTagData data, const char *tag_str)
    if (value)
      {
         char *path = SAFE_STRSTR(value, "file://");
+        int path_len = SAFE_STRLEN(path);
         if (path)
           {
              char *modify = MALLOC(sizeof(char) * (SAFE_STRLEN(value) + 1));
@@ -664,7 +665,7 @@ _set_EFL_item_data(PItemTagData data, const char *tag_str)
                {
                   path++;
                }
-             SAFE_STRCAT(modify, path);
+             SAFE_STRNCAT(modify, path, path_len);
              data->href = modify;
              DBG("image href ---%s---", data->href);
              FREE(value);
@@ -734,6 +735,7 @@ _set_HTML_img_data(PItemTagData data, const char *tag_str)
    if (value)
      {
         char *path = SAFE_STRSTR(value, "file://");
+        int path_len = SAFE_STRLEN(path);
         if (path)
           {
              char *modify = MALLOC(sizeof(char) * (SAFE_STRLEN(value) + 1));
@@ -743,7 +745,7 @@ _set_HTML_img_data(PItemTagData data, const char *tag_str)
                {
                   path++;
                }
-             SAFE_STRCAT(modify, path);
+             SAFE_STRNCAT(modify, path, path_len);
              data->href = modify;
              DBG("image src ---%s---", data->href);
              FREE(value);
@@ -1623,7 +1625,7 @@ _convert_to_text(Cbhmd_App_Data *ad, int type_index,
         tmp = _convert_markup_to_entry(ad, type_index, emoticon_text);
         entry_text = evas_textblock_text_markup_to_utf8(NULL, tmp);
         free(tmp);
-        if (entry_text) strcat(entry_text, "\0");
+        if (entry_text) SAFE_STRNCAT(entry_text, "\0", 1);
         FREE(emoticon_text);
      }
    return entry_text;
