@@ -82,7 +82,7 @@ _wl_handler_selection_offer(void *data EINA_UNUSED,
 }
 
 static Eina_Bool
-_wl_hanalder_selection_send(void *udata, int type EINA_UNUSED,
+_wl_handler_selection_send(void *udata, int type EINA_UNUSED,
                             void *event)
 {
    FN_CALL();
@@ -209,7 +209,7 @@ cbhmd_wl_handler_init(Cbhmd_App_Data *ad)
 
    /* to catch requests for sending data */
    wld->wl_send_handler = ecore_event_handler_add(
-      ECORE_WL_EVENT_DATA_SOURCE_SEND, _wl_hanalder_selection_send, ad);
+      ECORE_WL_EVENT_DATA_SOURCE_SEND, _wl_handler_selection_send, ad);
 
    /* to receive offered data */
    wld->wl_receive_handler = ecore_event_handler_add(
